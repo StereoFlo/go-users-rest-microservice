@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"github.com/badoux/checkmail"
+	"strings"
 	"time"
 	"user-app/infrastructure/security"
 )
@@ -45,4 +47,58 @@ func (user *User) PublicUser() interface{} {
 		Email:        user.Email,
 		AccessTokens: user.AccessTokens,
 	}
+}
+func (u *User) Validate(action string) map[string]string {
+	var errorMessages = make(map[string]string)
+	var err error
+
+	switch strings.ToLower(action) {
+	case "update":
+		if u.Email == "" {
+			errorMessages["email_required"] = "email required"
+		}
+		if u.Email != "" {
+			if err = checkmail.ValidateFormat(u.Email); err != nil {
+				errorMessages["invalid_email"] = "email email"
+			}
+		}
+
+	case "login":
+		if u.Password == "" {
+			errorMessages["password_required"] = "password is required"
+		}
+		if u.Email == "" {
+			errorMessages["email_required"] = "email is required"
+		}
+		if u.Email != "" {
+			if err = checkmail.ValidateFormat(u.Email); err != nil {
+				errorMessages["invalid_email"] = "please provide a valid email"
+			}
+		}
+	case "forgot_password":
+		if u.Email == "" {
+			errorMessages["email_required"] = "email required"
+		}
+		if u.Email != "" {
+			if err = checkmail.ValidateFormat(u.Email); err != nil {
+				errorMessages["invalid_email"] = "please provide a valid email"
+			}
+		}
+	default:
+		if u.Password == "" {
+			errorMessages["password_required"] = "password is required"
+		}
+		if u.Password != "" && len(u.Password) < 6 {
+			errorMessages["invalid_password"] = "password should be at least 6 characters"
+		}
+		if u.Email == "" {
+			errorMessages["email_required"] = "email is required"
+		}
+		if u.Email != "" {
+			if err = checkmail.ValidateFormat(u.Email); err != nil {
+				errorMessages["invalid_email"] = "please provide a valid email"
+			}
+		}
+	}
+	return errorMessages
 }

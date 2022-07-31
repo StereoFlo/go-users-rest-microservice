@@ -18,9 +18,9 @@ func CreateUserRepository(db *gorm.DB) *UserRepo {
 
 var _ repository.UserRepository = &UserRepo{}
 
-func (r *UserRepo) SaveUser(user *entity.User) (*entity.User, map[string]string) {
+func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, map[string]string) {
 	dbErr := map[string]string{}
-	err := r.db.Debug().Create(&user).Error
+	err := repo.db.Debug().Update(&user).Error
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "Duplicate") {
 			dbErr["email_taken"] = "email already taken"
@@ -32,9 +32,9 @@ func (r *UserRepo) SaveUser(user *entity.User) (*entity.User, map[string]string)
 	return user, nil
 }
 
-func (r *UserRepo) GetUser(id uint64) (*entity.User, error) {
+func (repo *UserRepo) GetUser(id uint64) (*entity.User, error) {
 	var user entity.User
-	err := r.db.Debug().Preload("AccessTokens").Where("id = ?", id).Take(&user).Error
+	err := repo.db.Debug().Preload("AccessTokens").Where("id = ?", id).Take(&user).Error
 	if err != nil {
 		return nil, err
 	}
@@ -44,9 +44,9 @@ func (r *UserRepo) GetUser(id uint64) (*entity.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepo) GetUserByAccessToken(token string) (*entity.User, error) {
+func (repo *UserRepo) GetUserByEmail(email string) (*entity.User, error) {
 	var user entity.User
-	err := r.db.Debug().Joins("AccessTokens", r.db.Where(&entity.Token{AccessToken: token})).Where("token = ?", token).Take(&user).Error
+	err := repo.db.Debug().Preload("AccessTokens").Where("email = ?", email).Take(&user).Error
 	if err != nil {
 		return nil, err
 	}
@@ -56,9 +56,21 @@ func (r *UserRepo) GetUserByAccessToken(token string) (*entity.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepo) GetList() ([]entity.User, error) {
+func (repo *UserRepo) GetUserByAccessToken(token string) (*entity.Token, error) {
+	var tokenEntity entity.Token
+	err := repo.db.Debug().Where("access_token = ?", token).Take(&tokenEntity).Error
+	if err != nil {
+		return nil, err
+	}
+	if gorm.IsRecordNotFoundError(err) {
+		return nil, errors.New("user not found")
+	}
+	return &tokenEntity, nil
+}
+
+func (repo *UserRepo) GetList() ([]entity.User, error) {
 	var users []entity.User
-	err := r.db.Debug().Find(&users).Error
+	err := repo.db.Debug().Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
