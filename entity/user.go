@@ -8,7 +8,7 @@ import (
 )
 
 type User struct {
-	ID           uint64    `gorm:"primary_key;auto_increment" json:"id"`
+	ID           int       `gorm:"primary_key;auto_increment" json:"id"`
 	Email        string    `gorm:"size:100;not null;unique" json:"email"`
 	Password     string    `gorm:"size:100;not null;" json:"password"`
 	AccessTokens []Token   `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
@@ -17,7 +17,7 @@ type User struct {
 }
 
 type PublicUser struct {
-	ID           uint64  `gorm:"primary_key;auto_increment" json:"id"`
+	ID           int     `gorm:"primary_key;auto_increment" json:"id"`
 	Email        string  `gorm:"size:100;not null;" json:"email"`
 	AccessTokens []Token `json:"access_tokens"`
 }
