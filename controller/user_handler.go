@@ -46,12 +46,12 @@ func (userStr *Users) GetList(context *gin.Context) {
 }
 
 func (userStr *Users) GetUser(context *gin.Context) {
-	userId, err := strconv.ParseUint(context.Param("user_id"), 10, 64)
+	userId, err := strconv.Atoi(context.Param("user_id"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	user, err := userStr.App.GetUser(userId)
+	user, err := userStr.App.GetUser(userId, 1)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return

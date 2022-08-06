@@ -55,5 +55,6 @@ func (authInterface *Authenticate) Login(context *gin.Context) {
 		UserId:             user.ID,
 	}
 	authInterface.UserApp.SaveToken(token)
+	user, err = authInterface.UserApp.GetUser(user.ID, 1)
 	context.JSON(http.StatusOK, token)
 }

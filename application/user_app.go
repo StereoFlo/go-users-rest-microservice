@@ -6,8 +6,8 @@ import (
 )
 
 type UserApp struct {
-	UserRepo        repository.UserRepository
-	AccessTokenRepo repository.AccessTokenRepository
+	UserRepo        repository.UserRepo
+	AccessTokenRepo repository.AccessTokenRepo
 }
 
 func (userApp *UserApp) SaveUser(user *entity.User) (*entity.User, map[string]string) {
@@ -18,16 +18,16 @@ func (userApp *UserApp) SaveToken(token *entity.Token) (*entity.Token, map[strin
 	return userApp.AccessTokenRepo.SaveToken(token)
 }
 
-func (userApp *UserApp) GetUser(userId uint64) (*entity.User, error) {
-	return userApp.UserRepo.GetUser(userId)
+func (userApp *UserApp) GetUser(userId int, tokenLimit int) (*entity.User, error) {
+	return userApp.UserRepo.GetUser(userId, tokenLimit)
 }
 
 func (userApp *UserApp) GetUserByEmail(email string) (*entity.User, error) {
 	return userApp.UserRepo.GetUserByEmail(email)
 }
 
-func (userApp *UserApp) GetUserByToken(userId uint64) (*entity.User, error) {
-	return userApp.UserRepo.GetUser(userId)
+func (userApp *UserApp) GetUserByToken(userId int, tokenLimit int) (*entity.User, error) {
+	return userApp.UserRepo.GetUser(userId, tokenLimit)
 }
 
 func (userApp *UserApp) GetList() ([]entity.User, error) {

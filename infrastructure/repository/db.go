@@ -1,16 +1,15 @@
-package persistence
+package repository
 
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"user-app/entity"
-	"user-app/infrastructure/repository"
 )
 
 type Repositories struct {
-	User  repository.UserRepository
-	Token repository.AccessTokenRepository
+	User  *UserRepo
+	Token *AccessTokenRepo
 	db    *gorm.DB
 }
 

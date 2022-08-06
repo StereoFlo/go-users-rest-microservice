@@ -8,7 +8,7 @@ import (
 	"user-app/application"
 	"user-app/controller"
 	"user-app/controller/middleware"
-	"user-app/infrastructure/persistence"
+	"user-app/infrastructure/repository"
 )
 
 func init() {
@@ -22,7 +22,7 @@ func main() {
 	repositories := getRepositories()
 	defer repositories.Close()
 	repositories.Automigrate()
-	app = application.UserApp{UserRepo: repositories.User, AccessTokenRepo: repositories.Token}
+	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
 	authHandlers := controller.NewAuth(app)
 	userHandlers := controller.NewUsers(app)
 
@@ -47,14 +47,14 @@ func userRoutes(router *gin.Engine, users *controller.Users) {
 	router.GET("/users/:user_id", users.GetUser)
 }
 
-func getRepositories() *persistence.Repositories {
+func getRepositories() *repository.Repositories {
 	dbDriver := os.Getenv("DB_DRIVER")
 	host := os.Getenv("DB_HOST")
 	password := os.Getenv("DB_PASSWORD")
 	user := os.Getenv("DB_USER")
 	dbname := os.Getenv("DB_NAME")
 	port := os.Getenv("DB_PORT")
-	repositories, err := persistence.CreateRepositories(dbDriver, user, password, port, host, dbname)
+	repositories, err := repository.CreateRepositories(dbDriver, user, password, port, host, dbname)
 	if err != nil {
 		panic(err)
 	}
