@@ -24,9 +24,9 @@ func NewUsers(userApp application.UserApp, responder *infrastructure.Responder) 
 func (userStr *Users) SaveUser(context *gin.Context) {
 	var user entity.User
 	if err := context.ShouldBindJSON(&user); err != nil {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{
+		context.JSON(http.StatusUnprocessableEntity, userStr.responder.Fail(gin.H{
 			"invalid_json": "invalid json",
-		})
+		}))
 		return
 	}
 	newUser, err := userStr.App.SaveUser(&user)
@@ -48,7 +48,7 @@ func (userStr *Users) GetList(context *gin.Context) {
 	var err error
 	users, err = userStr.App.GetList(limit, offset)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, userStr.responder.Fail(err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, userStr.responder.SuccessList(len(users.PublicUsers()), limit, offset, users))
@@ -62,7 +62,7 @@ func (userStr *Users) GetUser(context *gin.Context) {
 	}
 	user, err := userStr.App.GetUser(userId, 1)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, userStr.responder.Fail(err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, userStr.responder.Success(user.PublicUser()))
