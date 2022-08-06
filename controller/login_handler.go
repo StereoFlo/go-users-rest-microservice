@@ -7,7 +7,7 @@ import (
 	"time"
 	"user-app/application"
 	"user-app/entity"
-	"user-app/infrastructure/security"
+	"user-app/infrastructure"
 )
 
 type Authenticate struct {
@@ -41,7 +41,7 @@ func (authInterface *Authenticate) Login(context *gin.Context) {
 		return
 	}
 
-	err = security.VerifyPassword(user.Password, passwordRaw)
+	err = infrastructure.VerifyPassword(user.Password, passwordRaw)
 	if err != nil {
 		context.JSON(http.StatusNotFound, "password is wrong")
 		return

@@ -4,7 +4,7 @@ import (
 	"github.com/badoux/checkmail"
 	"strings"
 	"time"
-	"user-app/infrastructure/security"
+	"user-app/infrastructure"
 )
 
 type User struct {
@@ -23,7 +23,7 @@ type PublicUser struct {
 }
 
 func (u *User) BeforeSave() error {
-	hashPassword, err := security.Hash(u.Password)
+	hashPassword, err := infrastructure.Hash(u.Password)
 	if err != nil {
 		return err
 	}
