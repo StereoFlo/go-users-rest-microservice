@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"os"
+	"user-app/application"
 	"user-app/controller"
 	"user-app/controller/middleware"
 	"user-app/infrastructure/persistence"
@@ -17,11 +18,13 @@ func init() {
 }
 
 func main() {
+	var app application.UserApp
 	repositories := getRepositories()
 	defer repositories.Close()
 	repositories.Automigrate()
-	authHandlers := controller.NewAuthenticate(repositories.User)
-	userHandlers := controller.NewUsers(repositories.User)
+	app = application.UserApp{UserRepo: repositories.User, AccessTokenRepo: repositories.Token}
+	authHandlers := controller.NewAuth(app)
+	userHandlers := controller.NewUsers(app)
 
 	router := gin.Default()
 	router.Use(middleware.CORSMiddleware())
@@ -36,7 +39,6 @@ func main() {
 
 func authRoutes(router *gin.Engine, handler *controller.Authenticate) {
 	router.POST("/auth/login", handler.Login)
-	router.POST("/auth/logout", handler.Logout)
 }
 
 func userRoutes(router *gin.Engine, users *controller.Users) {

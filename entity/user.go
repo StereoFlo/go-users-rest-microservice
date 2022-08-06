@@ -22,12 +22,12 @@ type PublicUser struct {
 	AccessTokens []Token `json:"access_tokens"`
 }
 
-func (user *User) BeforeSave() error {
-	hashPassword, err := security.Hash(user.Password)
+func (u *User) BeforeSave() error {
+	hashPassword, err := security.Hash(u.Password)
 	if err != nil {
 		return err
 	}
-	user.Password = string(hashPassword)
+	u.Password = string(hashPassword)
 	return nil
 }
 
@@ -41,11 +41,11 @@ func (users Users) PublicUsers() []interface{} {
 	return result
 }
 
-func (user *User) PublicUser() interface{} {
+func (u *User) PublicUser() interface{} {
 	return &PublicUser{
-		ID:           user.ID,
-		Email:        user.Email,
-		AccessTokens: user.AccessTokens,
+		ID:           u.ID,
+		Email:        u.Email,
+		AccessTokens: u.AccessTokens,
 	}
 }
 func (u *User) Validate(action string) map[string]string {

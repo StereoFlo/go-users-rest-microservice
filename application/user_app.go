@@ -5,40 +5,35 @@ import (
 	"user-app/infrastructure/repository"
 )
 
-type userApp struct {
-	userRepo repository.UserRepository
+type UserApp struct {
+	UserRepo        repository.UserRepository
+	AccessTokenRepo repository.AccessTokenRepository
 }
 
-var _ UserAppInterface = &userApp{}
-
-type UserAppInterface interface {
-	SaveUser(*entity.User) (*entity.User, map[string]string)
-	GetList() ([]entity.User, error)
-	GetUser(uint64) (*entity.User, error)
-	GetUserByEmail(email string) (*entity.User, error)
-	GetUserByAccessToken(token string) (*entity.Token, error)
+func (userApp *UserApp) SaveUser(user *entity.User) (*entity.User, map[string]string) {
+	return userApp.SaveUser(user)
 }
 
-func (userApp *userApp) SaveUser(user *entity.User) (*entity.User, map[string]string) {
-	return userApp.userRepo.SaveUser(user)
+func (userApp *UserApp) SaveToken(token *entity.Token) (*entity.Token, map[string]string) {
+	return userApp.AccessTokenRepo.SaveToken(token)
 }
 
-func (userApp *userApp) GetUser(userId uint64) (*entity.User, error) {
-	return userApp.userRepo.GetUser(userId)
+func (userApp *UserApp) GetUser(userId uint64) (*entity.User, error) {
+	return userApp.UserRepo.GetUser(userId)
 }
 
-func (userApp *userApp) GetUserByEmail(email string) (*entity.User, error) {
-	return userApp.userRepo.GetUserByEmail(email)
+func (userApp *UserApp) GetUserByEmail(email string) (*entity.User, error) {
+	return userApp.UserRepo.GetUserByEmail(email)
 }
 
-func (userApp *userApp) GetUserByToken(userId uint64) (*entity.User, error) {
-	return userApp.userRepo.GetUser(userId)
+func (userApp *UserApp) GetUserByToken(userId uint64) (*entity.User, error) {
+	return userApp.UserRepo.GetUser(userId)
 }
 
-func (userApp *userApp) GetList() ([]entity.User, error) {
-	return userApp.userRepo.GetList()
+func (userApp *UserApp) GetList() ([]entity.User, error) {
+	return userApp.UserRepo.GetList()
 }
 
-func (userApp *userApp) GetUserByAccessToken(token string) (*entity.Token, error) {
-	return userApp.userRepo.GetUserByAccessToken(token)
+func (userApp *UserApp) GetUserByAccessToken(token string) (*entity.Token, error) {
+	return userApp.UserRepo.GetUserByAccessToken(token)
 }

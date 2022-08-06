@@ -5,18 +5,15 @@ import (
 	"github.com/jinzhu/gorm"
 	"strings"
 	"user-app/entity"
-	"user-app/infrastructure/repository"
 )
 
 type UserRepo struct {
 	db *gorm.DB
 }
 
-func CreateUserRepository(db *gorm.DB) *UserRepo {
+func CreateUserRepo(db *gorm.DB) *UserRepo {
 	return &UserRepo{db}
 }
-
-var _ repository.UserRepository = &UserRepo{}
 
 func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, map[string]string) {
 	dbErr := map[string]string{}

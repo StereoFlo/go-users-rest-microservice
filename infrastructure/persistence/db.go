@@ -9,8 +9,9 @@ import (
 )
 
 type Repositories struct {
-	User repository.UserRepository
-	db   *gorm.DB
+	User  repository.UserRepository
+	Token repository.AccessTokenRepository
+	db    *gorm.DB
 }
 
 func CreateRepositories(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) (*Repositories, error) {
@@ -22,8 +23,9 @@ func CreateRepositories(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName str
 	db.LogMode(true)
 
 	return &Repositories{
-		User: CreateUserRepository(db),
-		db:   db,
+		User:  CreateUserRepo(db),
+		Token: CreateTokenRepo(db),
+		db:    db,
 	}, nil
 }
 

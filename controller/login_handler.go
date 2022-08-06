@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 	"time"
 	"user-app/application"
@@ -11,17 +11,18 @@ import (
 )
 
 type Authenticate struct {
-	userAppInterface application.UserAppInterface
+	UserApp application.UserApp
 }
 
-func NewAuthenticate(userAppInterface application.UserAppInterface) *Authenticate {
+func NewAuth(userApp application.UserApp) *Authenticate {
 	return &Authenticate{
-		userAppInterface: userAppInterface,
+		UserApp: userApp,
 	}
 }
 
 func (authInterface *Authenticate) Login(context *gin.Context) {
 	var user *entity.User
+	var token *entity.Token
 	err := context.ShouldBindJSON(&user)
 	if err != nil {
 		context.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
@@ -34,7 +35,7 @@ func (authInterface *Authenticate) Login(context *gin.Context) {
 	}
 
 	passwordRaw := user.Password
-	user, err = authInterface.userAppInterface.GetUserByEmail(user.Email)
+	user, err = authInterface.UserApp.GetUserByEmail(user.Email)
 	if err != nil {
 		context.JSON(http.StatusNotFound, "user not found")
 		return
@@ -45,13 +46,14 @@ func (authInterface *Authenticate) Login(context *gin.Context) {
 		context.JSON(http.StatusNotFound, "password is wrong")
 		return
 	}
-	token := entity.Token{AccessToken: "wwww", RefreshToken: "dddddd", AccessTokenExpire: time.Time{}, RefreshTokenExpire: time.Time{}, UserId: user.ID}
-	user.AccessTokens = append(user.AccessTokens, token)
-	fmt.Println(fmt.Sprintf("%#v", user))
-	authInterface.userAppInterface.SaveUser(user)
-	context.JSON(http.StatusOK, user)
-}
-
-func (authInterface *Authenticate) Logout(c *gin.Context) {
-	c.JSON(http.StatusOK, "Successfully logged out")
+	now := time.Now()
+	token = &entity.Token{
+		AccessToken:        uuid.New().String(),
+		RefreshToken:       uuid.New().String(),
+		AccessTokenExpire:  now.Add(time.Hour * 8),
+		RefreshTokenExpire: now.Add(time.Hour * 16),
+		UserId:             user.ID,
+	}
+	authInterface.UserApp.SaveToken(token)
+	context.JSON(http.StatusOK, token)
 }

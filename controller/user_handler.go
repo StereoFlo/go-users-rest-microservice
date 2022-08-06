@@ -9,12 +9,12 @@ import (
 )
 
 type Users struct {
-	appInterface application.UserAppInterface
+	App application.UserApp
 }
 
-func NewUsers(userAppInterface application.UserAppInterface) *Users {
+func NewUsers(userApp application.UserApp) *Users {
 	return &Users{
-		appInterface: userAppInterface,
+		App: userApp,
 	}
 }
 
@@ -26,7 +26,7 @@ func (userStr *Users) SaveUser(context *gin.Context) {
 		})
 		return
 	}
-	newUser, err := userStr.appInterface.SaveUser(&user)
+	newUser, err := userStr.App.SaveUser(&user)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err)
 		return
@@ -37,7 +37,7 @@ func (userStr *Users) SaveUser(context *gin.Context) {
 func (userStr *Users) GetList(context *gin.Context) {
 	users := entity.Users{}
 	var err error
-	users, err = userStr.appInterface.GetList()
+	users, err = userStr.App.GetList()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -51,7 +51,7 @@ func (userStr *Users) GetUser(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	user, err := userStr.appInterface.GetUser(userId)
+	user, err := userStr.App.GetUser(userId)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
