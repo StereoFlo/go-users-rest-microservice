@@ -39,9 +39,10 @@ func (userStr *Users) SaveUser(context *gin.Context) {
 
 func (userStr *Users) GetList(context *gin.Context) {
 	users := entity.Users{}
-	limit, err := strconv.Atoi(context.Query("limit"))
+	limit, _ := strconv.Atoi(context.Query("limit"))
 	offset, _ := strconv.Atoi(context.Query("offset"))
 
+	var err error
 	users, err = userStr.App.GetList()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
