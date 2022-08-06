@@ -67,9 +67,9 @@ func (repo *UserRepo) GetUserByAccessToken(token string) (*entity.Token, error) 
 	return &tokenEntity, nil
 }
 
-func (repo *UserRepo) GetList() ([]entity.User, error) {
+func (repo *UserRepo) GetList(limit int, offset int) ([]entity.User, error) {
 	var users []entity.User
-	err := repo.Database.Debug().Find(&users).Error
+	err := repo.Database.Debug().Offset(offset).Limit(limit).Find(&users).Error
 	if err != nil {
 		return nil, err
 	}

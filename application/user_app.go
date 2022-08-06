@@ -30,8 +30,8 @@ func (userApp *UserApp) GetUserByToken(userId int, tokenLimit int) (*entity.User
 	return userApp.UserRepo.GetUser(userId, tokenLimit)
 }
 
-func (userApp *UserApp) GetList() ([]entity.User, error) {
-	return userApp.UserRepo.GetList()
+func (userApp *UserApp) GetList(limit int, offset int) ([]entity.User, error) {
+	return userApp.UserRepo.GetList(limit, offset)
 }
 
 func (userApp *UserApp) GetUserByAccessToken(token string) (*entity.Token, error) {
