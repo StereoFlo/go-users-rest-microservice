@@ -1,4 +1,4 @@
-package controller
+package infrastructure
 
 import "github.com/gin-gonic/gin"
 
@@ -29,7 +29,7 @@ func (s Responder) SuccessList(total int, limit int, offset int, data any) gin.H
 	}
 }
 
-func (s Responder) fail(data any) gin.H {
+func (s Responder) Fail(data any) gin.H {
 	return gin.H{
 		"meta": gin.H{
 			"success": false,

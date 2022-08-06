@@ -12,10 +12,10 @@ import (
 
 type Authenticate struct {
 	UserApp   application.UserApp
-	responder *Responder
+	responder *infrastructure.Responder
 }
 
-func NewAuth(userApp application.UserApp, responder *Responder) *Authenticate {
+func NewAuth(userApp application.UserApp, responder *infrastructure.Responder) *Authenticate {
 	return &Authenticate{
 		UserApp:   userApp,
 		responder: responder,
@@ -27,7 +27,7 @@ func (authInterface *Authenticate) Login(context *gin.Context) {
 	var token *entity.Token
 	err := context.ShouldBindJSON(&user)
 	if err != nil {
-		context.JSON(http.StatusUnprocessableEntity, authInterface.responder.fail("Invalid json provided"))
+		context.JSON(http.StatusUnprocessableEntity, authInterface.responder.Fail("Invalid json provided"))
 		return
 	}
 	validateUser := user.Validate("login")
@@ -39,13 +39,13 @@ func (authInterface *Authenticate) Login(context *gin.Context) {
 	passwordRaw := user.Password
 	user, err = authInterface.UserApp.GetUserByEmail(user.Email)
 	if err != nil {
-		context.JSON(http.StatusNotFound, authInterface.responder.fail("user not found"))
+		context.JSON(http.StatusNotFound, authInterface.responder.Fail("user not found"))
 		return
 	}
 
 	err = infrastructure.VerifyPassword(user.Password, passwordRaw)
 	if err != nil {
-		context.JSON(http.StatusNotFound, authInterface.responder.fail("password is wrong"))
+		context.JSON(http.StatusNotFound, authInterface.responder.Fail("password is wrong"))
 		return
 	}
 	now := time.Now()

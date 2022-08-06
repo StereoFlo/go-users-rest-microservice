@@ -6,14 +6,15 @@ import (
 	"strconv"
 	"user-app/application"
 	"user-app/entity"
+	"user-app/infrastructure"
 )
 
 type Users struct {
 	App       application.UserApp
-	responder *Responder
+	responder *infrastructure.Responder
 }
 
-func NewUsers(userApp application.UserApp, responder *Responder) *Users {
+func NewUsers(userApp application.UserApp, responder *infrastructure.Responder) *Users {
 	return &Users{
 		App:       userApp,
 		responder: responder,

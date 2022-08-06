@@ -8,6 +8,7 @@ import (
 	"user-app/application"
 	"user-app/controller"
 	"user-app/controller/middleware"
+	"user-app/infrastructure"
 	"user-app/infrastructure/repository"
 )
 
@@ -23,7 +24,7 @@ func main() {
 	defer repositories.Close()
 	repositories.Automigrate()
 	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
-	responder := controller.NewResponder()
+	responder := infrastructure.NewResponder()
 	authHandlers := controller.NewAuth(app, responder)
 	userHandlers := controller.NewUsers(app, responder)
 
