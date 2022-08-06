@@ -9,12 +9,14 @@ import (
 )
 
 type Users struct {
-	App application.UserApp
+	App       application.UserApp
+	responder *Responder
 }
 
-func NewUsers(userApp application.UserApp) *Users {
+func NewUsers(userApp application.UserApp, responder *Responder) *Users {
 	return &Users{
-		App: userApp,
+		App:       userApp,
+		responder: responder,
 	}
 }
 
@@ -31,18 +33,20 @@ func (userStr *Users) SaveUser(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	context.JSON(http.StatusCreated, newUser.PublicUser())
+	context.JSON(http.StatusCreated, userStr.responder.Success(newUser.PublicUser()))
 }
 
 func (userStr *Users) GetList(context *gin.Context) {
 	users := entity.Users{}
-	var err error
+	limit, err := strconv.Atoi(context.Query("limit"))
+	offset, _ := strconv.Atoi(context.Query("offset"))
+
 	users, err = userStr.App.GetList()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-	context.JSON(http.StatusOK, users.PublicUsers())
+	context.JSON(http.StatusOK, userStr.responder.SuccessList(len(users.PublicUsers()), limit, offset, users))
 }
 
 func (userStr *Users) GetUser(context *gin.Context) {
@@ -56,5 +60,5 @@ func (userStr *Users) GetUser(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-	context.JSON(http.StatusOK, user.PublicUser())
+	context.JSON(http.StatusOK, userStr.responder.Success(user.PublicUser()))
 }

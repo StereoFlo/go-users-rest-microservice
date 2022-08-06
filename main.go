@@ -23,8 +23,9 @@ func main() {
 	defer repositories.Close()
 	repositories.Automigrate()
 	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
-	authHandlers := controller.NewAuth(app)
-	userHandlers := controller.NewUsers(app)
+	responder := controller.NewResponder()
+	authHandlers := controller.NewAuth(app, responder)
+	userHandlers := controller.NewUsers(app, responder)
 
 	router := gin.Default()
 	router.Use(middleware.CORSMiddleware())
