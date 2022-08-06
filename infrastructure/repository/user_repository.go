@@ -17,7 +17,7 @@ func CreateUserRepo(db *gorm.DB) *UserRepo {
 
 func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, map[string]string) {
 	dbErr := map[string]string{}
-	err := repo.Database.Debug().Update(&user).Error
+	err := repo.Database.Debug().Create(&user).Error
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "Duplicate") {
 			dbErr["email_taken"] = "email already taken"

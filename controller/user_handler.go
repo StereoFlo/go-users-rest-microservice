@@ -31,7 +31,7 @@ func (userStr *Users) SaveUser(context *gin.Context) {
 	}
 	newUser, err := userStr.App.SaveUser(&user)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, err)
+		context.JSON(http.StatusBadRequest, userStr.responder.Fail(err))
 		return
 	}
 	context.JSON(http.StatusCreated, userStr.responder.Success(newUser.PublicUser()))

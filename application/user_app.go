@@ -11,7 +11,7 @@ type UserApp struct {
 }
 
 func (userApp *UserApp) SaveUser(user *entity.User) (*entity.User, map[string]string) {
-	return userApp.SaveUser(user)
+	return userApp.UserRepo.SaveUser(user)
 }
 
 func (userApp *UserApp) SaveToken(token *entity.Token) (*entity.Token, map[string]string) {
