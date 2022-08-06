@@ -24,7 +24,7 @@ func NewUsers(userApp application.UserApp, responder *infrastructure.Responder) 
 func (userStr *Users) SaveUser(context *gin.Context) {
 	var user entity.User
 	if err := context.ShouldBindJSON(&user); err != nil {
-		context.JSON(http.StatusUnprocessableEntity, userStr.responder.Fail(gin.H{
+		context.JSON(http.StatusBadRequest, userStr.responder.Fail(gin.H{
 			"invalid_json": "invalid json",
 		}))
 		return
