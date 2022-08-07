@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 	"user-app/application"
-	"user-app/controller"
-	"user-app/controller/middleware"
+	"user-app/http"
+	"user-app/http/middleware"
 	"user-app/infrastructure"
 	"user-app/infrastructure/repository"
 )
@@ -26,8 +26,8 @@ func main() {
 	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
 	responder := infrastructure.NewResponder()
 	authMiddleware := middleware.NewAuth(app, responder)
-	authHandlers := controller.NewLoginHandler(app, responder)
-	userHandlers := controller.NewUserHandler(app, responder)
+	authHandlers := http.NewLoginHandler(app, responder)
+	userHandlers := http.NewUserHandler(app, responder)
 
 	router := gin.Default()
 	router.Use(middleware.Cors())
@@ -40,11 +40,11 @@ func main() {
 	log.Fatal(router.Run(":" + appPort))
 }
 
-func authRoutes(router *gin.Engine, handler *controller.LoginHandler) {
+func authRoutes(router *gin.Engine, handler *http.LoginHandler) {
 	router.POST("/auth/login", handler.Login)
 }
 
-func userRoutes(router *gin.Engine, users *controller.UserHandler, middleware *middleware.Auth) {
+func userRoutes(router *gin.Engine, users *http.UserHandler, middleware *middleware.Auth) {
 	router.POST("/users", middleware.Auth(), users.SaveUser)
 	router.GET("/users", middleware.Auth(), users.GetList)
 	router.GET("/users/:user_id", users.GetUser)
