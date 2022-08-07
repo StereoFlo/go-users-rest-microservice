@@ -22,12 +22,12 @@ func NewLoginHandler(userApp application.UserApp, responder *infrastructure.Resp
 	}
 }
 
-func (authInterface *LoginHandler) Login(context *gin.Context) {
+func (handler *LoginHandler) Login(context *gin.Context) {
 	var user *entity.User
 	var token *entity.Token
 	err := context.ShouldBindJSON(&user)
 	if err != nil {
-		context.JSON(http.StatusUnprocessableEntity, authInterface.responder.Fail("Invalid json provided"))
+		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
 		return
 	}
 	validateUser := user.Validate("login")
@@ -37,15 +37,15 @@ func (authInterface *LoginHandler) Login(context *gin.Context) {
 	}
 
 	passwordRaw := user.Password
-	user, err = authInterface.UserApp.GetUserByEmail(user.Email)
+	user, err = handler.UserApp.GetUserByEmail(user.Email)
 	if err != nil {
-		context.JSON(http.StatusNotFound, authInterface.responder.Fail("user not found"))
+		context.JSON(http.StatusNotFound, handler.responder.Fail("user not found"))
 		return
 	}
 
 	err = infrastructure.VerifyPassword(user.Password, passwordRaw)
 	if err != nil {
-		context.JSON(http.StatusNotFound, authInterface.responder.Fail("password is wrong"))
+		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
 	}
 	now := time.Now()
@@ -56,7 +56,7 @@ func (authInterface *LoginHandler) Login(context *gin.Context) {
 		RefreshTokenExpire: now.Add(time.Hour * 16),
 		UserId:             user.ID,
 	}
-	authInterface.UserApp.SaveToken(token)
-	user, err = authInterface.UserApp.GetUser(user.ID, 1)
-	context.JSON(http.StatusOK, authInterface.responder.Success(token))
+	handler.UserApp.SaveToken(token)
+	user, err = handler.UserApp.GetUser(user.ID, 1)
+	context.JSON(http.StatusOK, handler.responder.Success(token))
 }
