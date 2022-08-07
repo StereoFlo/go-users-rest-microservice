@@ -24,15 +24,15 @@ func main() {
 	defer repositories.Close()
 	repositories.Automigrate()
 	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
-	middlewares := middleware.NewMiddleware(app)
+	authMiddleware := middleware.NewAuth(app)
 	responder := infrastructure.NewResponder()
 	authHandlers := controller.NewAuth(app, responder)
 	userHandlers := controller.NewUsers(app, responder)
 
 	router := gin.Default()
-	router.Use(middlewares.CORSMiddleware())
+	router.Use(middleware.Cors())
 	authRoutes(router, authHandlers)
-	userRoutes(router, userHandlers, middlewares)
+	userRoutes(router, userHandlers, authMiddleware)
 	appPort := os.Getenv("API_PORT")
 	if appPort == "" {
 		appPort = "8888"
@@ -44,9 +44,9 @@ func authRoutes(router *gin.Engine, handler *controller.Authenticate) {
 	router.POST("/auth/login", handler.Login)
 }
 
-func userRoutes(router *gin.Engine, users *controller.Users, middleware *middleware.Middleware) {
-	router.POST("/users", middleware.AuthMiddleware(), users.SaveUser)
-	router.GET("/users", middleware.AuthMiddleware(), users.GetList)
+func userRoutes(router *gin.Engine, users *controller.Users, middleware *middleware.Auth) {
+	router.POST("/users", middleware.Auth(), users.SaveUser)
+	router.GET("/users", middleware.Auth(), users.GetList)
 	router.GET("/users/:user_id", users.GetUser)
 }
 
