@@ -78,3 +78,13 @@ func (repo *UserRepo) GetList(limit int, offset int) ([]entity.User, error) {
 	}
 	return users, nil
 }
+
+func (repo *UserRepo) GetCount() (int, error) {
+	var cnt int
+	err := repo.Database.Table("users").Debug().Count(&cnt).Error
+	if err != nil {
+		return cnt, err
+	}
+
+	return cnt, nil
+}

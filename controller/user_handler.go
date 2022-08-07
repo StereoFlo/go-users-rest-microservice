@@ -34,7 +34,7 @@ func (userStr *UserHandler) SaveUser(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, userStr.responder.Fail(err))
 		return
 	}
-	context.JSON(http.StatusCreated, userStr.responder.Success(newUser.PublicUser()))
+	context.JSON(http.StatusCreated, userStr.responder.Success(newUser.GetUser()))
 }
 
 func (userStr *UserHandler) GetList(context *gin.Context) {
@@ -44,14 +44,18 @@ func (userStr *UserHandler) GetList(context *gin.Context) {
 		limit = 10
 	}
 	offset, _ := strconv.Atoi(context.Query("offset"))
-
+	cnt, _ := userStr.App.GetUserCount()
+	if cnt == 0 {
+		context.JSON(http.StatusOK, userStr.responder.SuccessList(0, limit, offset, gin.H{}))
+		return
+	}
 	var err error
 	users, err = userStr.App.GetList(limit, offset)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, userStr.responder.Fail(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, userStr.responder.SuccessList(len(users.PublicUsers()), limit, offset, users))
+	context.JSON(http.StatusOK, userStr.responder.SuccessList(cnt, limit, offset, users))
 }
 
 func (userStr *UserHandler) GetUser(context *gin.Context) {
@@ -65,5 +69,5 @@ func (userStr *UserHandler) GetUser(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, userStr.responder.Fail(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, userStr.responder.Success(user.PublicUser()))
+	context.JSON(http.StatusOK, userStr.responder.Success(user.GetUser()))
 }

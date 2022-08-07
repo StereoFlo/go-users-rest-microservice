@@ -11,15 +11,9 @@ type User struct {
 	ID           int       `gorm:"primary_key;auto_increment" json:"id"`
 	Email        string    `gorm:"size:100;not null;unique" json:"email"`
 	Password     string    `gorm:"size:100;not null;" json:"-"`
-	AccessTokens []Token   `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	AccessTokens []Token   `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 	CreatedAt    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
-}
-
-type PublicUser struct {
-	ID           int     `gorm:"primary_key;auto_increment" json:"id"`
-	Email        string  `gorm:"size:100;not null;" json:"email"`
-	AccessTokens []Token `json:"access_tokens"`
 }
 
 func (u *User) BeforeSave() error {
@@ -33,16 +27,16 @@ func (u *User) BeforeSave() error {
 
 type Users []User
 
-func (users Users) PublicUsers() []interface{} {
-	result := make([]interface{}, len(users))
+func (users Users) GetUsers() []*User {
+	result := make([]*User, len(users))
 	for index, user := range users {
-		result[index] = user.PublicUser()
+		result[index] = user.GetUser()
 	}
 	return result
 }
 
-func (u *User) PublicUser() interface{} {
-	return &PublicUser{
+func (u *User) GetUser() *User {
+	return &User{
 		ID:           u.ID,
 		Email:        u.Email,
 		AccessTokens: u.AccessTokens,
