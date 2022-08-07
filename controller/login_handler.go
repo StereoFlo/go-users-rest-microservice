@@ -10,19 +10,19 @@ import (
 	"user-app/infrastructure"
 )
 
-type Authenticate struct {
+type LoginHandler struct {
 	UserApp   application.UserApp
 	responder *infrastructure.Responder
 }
 
-func NewAuth(userApp application.UserApp, responder *infrastructure.Responder) *Authenticate {
-	return &Authenticate{
+func NewLoginHandler(userApp application.UserApp, responder *infrastructure.Responder) *LoginHandler {
+	return &LoginHandler{
 		UserApp:   userApp,
 		responder: responder,
 	}
 }
 
-func (authInterface *Authenticate) Login(context *gin.Context) {
+func (authInterface *LoginHandler) Login(context *gin.Context) {
 	var user *entity.User
 	var token *entity.Token
 	err := context.ShouldBindJSON(&user)

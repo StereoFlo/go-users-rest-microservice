@@ -26,8 +26,8 @@ func main() {
 	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
 	responder := infrastructure.NewResponder()
 	authMiddleware := middleware.NewAuth(app, responder)
-	authHandlers := controller.NewAuth(app, responder)
-	userHandlers := controller.NewUsers(app, responder)
+	authHandlers := controller.NewLoginHandler(app, responder)
+	userHandlers := controller.NewUserHandler(app, responder)
 
 	router := gin.Default()
 	router.Use(middleware.Cors())
@@ -40,11 +40,11 @@ func main() {
 	log.Fatal(router.Run(":" + appPort))
 }
 
-func authRoutes(router *gin.Engine, handler *controller.Authenticate) {
+func authRoutes(router *gin.Engine, handler *controller.LoginHandler) {
 	router.POST("/auth/login", handler.Login)
 }
 
-func userRoutes(router *gin.Engine, users *controller.Users, middleware *middleware.Auth) {
+func userRoutes(router *gin.Engine, users *controller.UserHandler, middleware *middleware.Auth) {
 	router.POST("/users", middleware.Auth(), users.SaveUser)
 	router.GET("/users", middleware.Auth(), users.GetList)
 	router.GET("/users/:user_id", users.GetUser)

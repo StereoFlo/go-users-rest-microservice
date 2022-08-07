@@ -9,19 +9,19 @@ import (
 	"user-app/infrastructure"
 )
 
-type Users struct {
+type UserHandler struct {
 	App       application.UserApp
 	responder *infrastructure.Responder
 }
 
-func NewUsers(userApp application.UserApp, responder *infrastructure.Responder) *Users {
-	return &Users{
+func NewUserHandler(userApp application.UserApp, responder *infrastructure.Responder) *UserHandler {
+	return &UserHandler{
 		App:       userApp,
 		responder: responder,
 	}
 }
 
-func (userStr *Users) SaveUser(context *gin.Context) {
+func (userStr *UserHandler) SaveUser(context *gin.Context) {
 	var user entity.User
 	if err := context.ShouldBindJSON(&user); err != nil {
 		context.JSON(http.StatusBadRequest, userStr.responder.Fail(gin.H{
@@ -37,7 +37,7 @@ func (userStr *Users) SaveUser(context *gin.Context) {
 	context.JSON(http.StatusCreated, userStr.responder.Success(newUser.PublicUser()))
 }
 
-func (userStr *Users) GetList(context *gin.Context) {
+func (userStr *UserHandler) GetList(context *gin.Context) {
 	users := entity.Users{}
 	limit, _ := strconv.Atoi(context.Query("limit"))
 	if limit == 0 {
@@ -54,7 +54,7 @@ func (userStr *Users) GetList(context *gin.Context) {
 	context.JSON(http.StatusOK, userStr.responder.SuccessList(len(users.PublicUsers()), limit, offset, users))
 }
 
-func (userStr *Users) GetUser(context *gin.Context) {
+func (userStr *UserHandler) GetUser(context *gin.Context) {
 	userId, err := strconv.Atoi(context.Param("user_id"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, err.Error())
