@@ -24,8 +24,8 @@ func main() {
 	defer repositories.Close()
 	repositories.Automigrate()
 	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
-	authMiddleware := middleware.NewAuth(app)
 	responder := infrastructure.NewResponder()
+	authMiddleware := middleware.NewAuth(app, responder)
 	authHandlers := controller.NewAuth(app, responder)
 	userHandlers := controller.NewUsers(app, responder)
 
