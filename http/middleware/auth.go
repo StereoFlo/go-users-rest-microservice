@@ -32,14 +32,14 @@ func (userApp *Auth) Auth() gin.HandlerFunc {
 			return
 		}
 
-		bdToken, _ := userApp.userApp.UserRepo.GetUserByAccessToken(token)
-		if bdToken == nil {
-			c.JSON(401, userApp.responder.Fail("token is wrong"))
+		bdToken, err := userApp.userApp.UserRepo.GetUserByAccessToken(token)
+		if err != nil {
+			c.JSON(401, userApp.responder.Fail(err))
 			c.Abort()
 			return
 		}
 
-		if bdToken.AccessTokenExpire.Unix() > time.Now().Unix() {
+		if bdToken.AccessTokenExpire.Unix() < time.Now().Unix() {
 			c.JSON(401, userApp.responder.Fail("token is expired"))
 			c.Abort()
 			return

@@ -45,9 +45,9 @@ func authRoutes(router *gin.Engine, handler *http.LoginHandler) {
 }
 
 func userRoutes(router *gin.Engine, users *http.UserHandler, middleware *middleware.Auth) {
-	router.POST("/users", middleware.Auth(), users.SaveUser)
-	router.GET("/users", middleware.Auth(), users.GetList)
-	router.GET("/users/:user_id", users.GetUser)
+	router.POST("/v1/users", middleware.Auth(), users.SaveUser)
+	router.GET("/v1/users", middleware.Auth(), users.GetList)
+	router.GET("/v1/users/:user_id", users.GetUser)
 }
 
 func getRepositories() *repository.Repositories {
