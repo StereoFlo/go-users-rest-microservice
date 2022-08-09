@@ -35,7 +35,7 @@ func main() {
 	userRoutes(router, userHandlers, authMiddleware)
 	appPort := os.Getenv("API_PORT")
 	if appPort == "" {
-		appPort = "8888"
+		appPort = "8081"
 	}
 	log.Fatal(router.Run(":" + appPort))
 }
