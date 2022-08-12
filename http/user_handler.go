@@ -52,7 +52,7 @@ func (handler *UserHandler) GetList(context *gin.Context) {
 	var err error
 	users, err = handler.App.GetList(limit, offset)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err.Error()))
+		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
 	context.JSON(http.StatusOK, handler.responder.SuccessList(cnt, limit, offset, users))
@@ -61,12 +61,12 @@ func (handler *UserHandler) GetList(context *gin.Context) {
 func (handler *UserHandler) GetUser(context *gin.Context) {
 	userId, err := strconv.Atoi(context.Param("user_id"))
 	if err != nil {
-		context.JSON(http.StatusBadRequest, err.Error())
+		context.JSON(http.StatusBadRequest, err)
 		return
 	}
 	user, err := handler.App.GetUser(userId, 1)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err.Error()))
+		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
 	context.JSON(http.StatusOK, handler.responder.Success(user.GetUser()))
