@@ -1,2 +1,2 @@
 # WIP
-not available yet, sry(
+not available yet, sry. Read the code
