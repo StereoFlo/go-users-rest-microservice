@@ -27,7 +27,7 @@ func (userApp *Auth) Auth() gin.HandlerFunc {
 		}
 
 		if !isValidUUID(token) {
-			c.JSON(401, userApp.responder.Fail("token is wrong"))
+			c.JSON(401, userApp.responder.Fail("jwt-token is wrong"))
 			c.Abort()
 			return
 		}
@@ -40,7 +40,7 @@ func (userApp *Auth) Auth() gin.HandlerFunc {
 		}
 
 		if bdToken.AccessTokenExpire.Unix() < time.Now().Unix() {
-			c.JSON(401, userApp.responder.Fail("token is expired"))
+			c.JSON(401, userApp.responder.Fail("jwt-token is expired"))
 			c.Abort()
 			return
 		}
