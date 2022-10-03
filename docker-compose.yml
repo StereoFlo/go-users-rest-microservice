@@ -1,11 +1,11 @@
 version: "3.8"
 services:
-  web:
+  app:
     container_name: go-users-app
-    build: ./
+    build:
+      context: .
     ports:
       - "8081:8081"
-    command: /app
     depends_on:
       - db
     env_file:
@@ -14,6 +14,6 @@ services:
     container_name: go-users-app-db
     image: postgres:14.1-alpine
     environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: app
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=app
+      - POSTGRES_DB=app

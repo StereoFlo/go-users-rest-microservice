@@ -1,17 +1,11 @@
-# Compile stage
-FROM golang:1.19 AS build-env
+FROM golang:1.19-alpine
 
-ADD . /var/www
-WORKDIR /var/www
-
-RUN go build -o /app
-
-# Final stage
-FROM debian:buster
-
-EXPOSE 8000
-
-WORKDIR /
-COPY --from=build-env /app /
-
-CMD ["/app"]
+RUN apk update && apk upgrade && \
+    apk add --no-cache bash git openssh
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go build -o main .
+EXPOSE 8081
+CMD ["./main"]
