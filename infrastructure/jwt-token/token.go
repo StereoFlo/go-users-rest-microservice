@@ -3,6 +3,7 @@ package jwt_token
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"log"
 	"os"
 	"time"
@@ -10,8 +11,8 @@ import (
 )
 
 type Data struct {
-	UserId  int `json:"user_id"`
-	TokenId int `json:"token_id"`
+	UserId  int    `json:"user_id"`
+	TokenId string `json:"token_id"`
 }
 
 type Claim struct {
@@ -41,8 +42,10 @@ func (t Token) Get(ttl time.Time, user *entity.User) (string, error) {
 
 	now := time.Now()
 	claims := make(jwt.MapClaims)
+	uid := uuid.New()
 	claims["data"] = Data{
-		UserId: user.ID,
+		UserId:  user.ID,
+		TokenId: uid.String(),
 	}
 	claims["exp"] = ttl.Unix()
 	claims["iat"] = now.Unix()

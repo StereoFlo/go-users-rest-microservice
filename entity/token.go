@@ -6,6 +6,7 @@ import (
 
 type Token struct {
 	ID                 int       `gorm:"primary_key;auto_increment" json:"id"`
+	UUID               string    `gorm:"nut null;unique" json:"uuid"`
 	UserId             int       `gorm:"nut null" json:"user_id"`
 	AccessToken        string    `gorm:"nut null;unique" json:"access_token"`
 	RefreshToken       string    `gorm:"nut null;unique" json:"refresh_token"`

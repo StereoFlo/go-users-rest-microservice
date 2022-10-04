@@ -15,16 +15,13 @@ func CreateUserRepo(db *gorm.DB) *UserRepo {
 	return &UserRepo{db}
 }
 
-func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, map[string]string) {
-	dbErr := map[string]string{}
+func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, error) {
 	err := repo.Database.Debug().Create(&user).Error
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "Duplicate") {
-			dbErr["email_taken"] = "email already taken"
-			return nil, dbErr
+			return nil, err
 		}
-		dbErr["db_error"] = "database error"
-		return nil, dbErr
+		return nil, err
 	}
 	return user, nil
 }

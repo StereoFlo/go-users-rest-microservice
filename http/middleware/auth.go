@@ -26,14 +26,14 @@ func (userApp *Auth) Auth(c *gin.Context) {
 		return
 	}
 	jwt := jwt_token.NewToken()
-	_, err := jwt.Validate(token)
+	data, err := jwt.Validate(token)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(401, userApp.responder.Fail(err))
 		c.Abort()
 		return
 	}
-	dbToken, err := userApp.userApp.UserRepo.GetByAccessToken(token)
+	dbToken, err := userApp.userApp.GetTokenByUId(data.Data.TokenId)
 	if err != nil {
 		c.JSON(401, userApp.responder.Fail(err))
 		c.Abort()

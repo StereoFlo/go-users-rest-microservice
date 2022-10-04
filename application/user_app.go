@@ -10,12 +10,16 @@ type UserApp struct {
 	AccessTokenRepo repository.AccessTokenRepo
 }
 
-func (userApp *UserApp) SaveUser(user *entity.User) (*entity.User, map[string]string) {
+func (userApp *UserApp) SaveUser(user *entity.User) (*entity.User, error) {
 	return userApp.UserRepo.SaveUser(user)
 }
 
-func (userApp *UserApp) SaveToken(token *entity.Token) (*entity.Token, map[string]string) {
+func (userApp *UserApp) SaveToken(token *entity.Token) (*entity.Token, error) {
 	return userApp.AccessTokenRepo.SaveToken(token)
+}
+
+func (userApp *UserApp) GetTokenByUId(id string) (*entity.Token, error) {
+	return userApp.AccessTokenRepo.GetTokenByUId(id)
 }
 
 func (userApp *UserApp) GetUser(userId int, tokenLimit int) (*entity.User, error) {

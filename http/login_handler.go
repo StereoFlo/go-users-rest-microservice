@@ -42,23 +42,25 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		return
 	}
 
-	passwordRaw := user.Password
-	err = infrastructure.VerifyPassword(user.Password, passwordRaw)
-	if err != nil {
-		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
-		return
-	}
+	//passwordRaw := user.Password
+	//err = infrastructure.VerifyPassword(user.Password, passwordRaw)
+	//if err != nil {
+	//	context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
+	//	return
+	//}
 	jwt := jwt_token.NewToken()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
 	accessToken := getToken(jwt, acExpire, user)
 	refreshToken := getToken(jwt, rtExpire, user)
+	t, _ := jwt.Validate(accessToken)
 	token = &entity.Token{
 		AccessToken:        accessToken,
 		RefreshToken:       refreshToken,
 		AccessTokenExpire:  acExpire,
 		RefreshTokenExpire: rtExpire,
 		UserId:             user.ID,
+		UUID:               t.Data.TokenId,
 	}
 	handler.UserApp.SaveToken(token)
 	user, err = handler.UserApp.GetUser(user.ID, 1)
