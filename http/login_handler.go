@@ -8,7 +8,7 @@ import (
 	"user-app/application"
 	"user-app/entity"
 	"user-app/infrastructure"
-	jwt_token "user-app/infrastructure/jwt-token"
+	"user-app/infrastructure/jwt-token"
 )
 
 type LoginHandler struct {
@@ -42,12 +42,12 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		return
 	}
 
-	//passwordRaw := user.Password
-	//err = infrastructure.VerifyPassword(user.Password, passwordRaw)
-	//if err != nil {
-	//	context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
-	//	return
-	//}
+	passwordRaw := user.Password
+	err = infrastructure.VerifyPassword(user.Password, passwordRaw)
+	if err != nil {
+		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
+		return
+	}
 	jwt := jwt_token.NewToken()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
@@ -62,7 +62,11 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		UserId:             user.ID,
 		UUID:               t.Data.TokenId,
 	}
-	handler.UserApp.SaveToken(token)
+	_, err = handler.UserApp.SaveToken(token)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		return
+	}
 	user, err = handler.UserApp.GetUser(user.ID, 1)
 	context.JSON(http.StatusOK, handler.responder.Success(token))
 }
