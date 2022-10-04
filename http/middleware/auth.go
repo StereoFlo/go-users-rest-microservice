@@ -1,11 +1,14 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"log"
+	"os"
 	"time"
 	"user-app/application"
 	"user-app/infrastructure"
+	jwt_token "user-app/infrastructure/jwt-token"
 )
 
 type Auth struct {
@@ -25,13 +28,22 @@ func (userApp *Auth) Auth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		if !isValidUUID(token) {
-			c.JSON(401, userApp.responder.Fail("jwt-token is wrong"))
+		privateKey, err := os.ReadFile("private_key.pem")
+		if err != nil {
+			log.Fatalln(err)
+		}
+		publicKey, err := os.ReadFile("public_key.pem")
+		if err != nil {
+			log.Fatalln(err)
+		}
+		jwt := jwt_token.NewJWT(privateKey, publicKey)
+		_, err = jwt.Validate(token)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(401, userApp.responder.Fail(err))
 			c.Abort()
 			return
 		}
-
 		bdToken, err := userApp.userApp.UserRepo.GetUserByAccessToken(token)
 		if err != nil {
 			c.JSON(401, userApp.responder.Fail(err))
@@ -47,8 +59,4 @@ func (userApp *Auth) Auth() gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-func isValidUUID(u string) bool {
-	_, err := uuid.Parse(u)
-	return err == nil
 }

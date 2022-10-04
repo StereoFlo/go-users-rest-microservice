@@ -20,19 +20,19 @@ func NewJWT(privateKey []byte, publicKey []byte) JWT {
 	}
 }
 
-func (j JWT) Get(ttl time.Duration, user *entity.User) (string, error) {
+func (j JWT) Get(ttl time.Time, user *entity.User) (string, error) {
 	key, err := jwt.ParseRSAPrivateKeyFromPEM(j.privateKey)
 	if err != nil {
 		return "", fmt.Errorf("create: parse key: %w", err)
 	}
 
-	now := time.Now().UTC()
-
+	now := time.Now()
+	fmt.Println(ttl)
 	claims := make(jwt.MapClaims)
 	claims["dat"] = gin.H{
 		"user_id": user.ID,
 	}
-	claims["exp"] = now.Add(ttl).Unix()
+	claims["exp"] = ttl.Unix()
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()
 

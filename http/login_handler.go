@@ -49,32 +49,37 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
 	}
-	privateKey, err := os.ReadFile("private_key.pem")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	publicKey, err := os.ReadFile("public_key.pem")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	privateKey := getKeyData("private_key.pem")
+	publicKey := getKeyData("public_key.pem")
 	jwt := jwt_token.NewJWT(privateKey, publicKey)
-	now := time.Now()
-	accessToken, err := jwt.Get(now.Sub(now.Add(time.Hour*8)), user)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	refreshToken, err := jwt.Get(now.Sub(now.Add(time.Hour*16)), user)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	acExpire := time.Now().Add(10 * time.Hour)
+	rtExpire := time.Now().Add(20 * time.Hour)
+	accessToken := getToken(jwt, acExpire, user)
+	refreshToken := getToken(jwt, rtExpire, user)
 	token = &entity.Token{
 		AccessToken:        accessToken,
 		RefreshToken:       refreshToken,
-		AccessTokenExpire:  now.Add(time.Hour * 8),
-		RefreshTokenExpire: now.Add(time.Hour * 16),
+		AccessTokenExpire:  acExpire,
+		RefreshTokenExpire: rtExpire,
 		UserId:             user.ID,
 	}
 	handler.UserApp.SaveToken(token)
 	user, err = handler.UserApp.GetUser(user.ID, 1)
 	context.JSON(http.StatusOK, handler.responder.Success(token))
+}
+
+func getKeyData(path string) []byte {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return data
+}
+
+func getToken(jwt jwt_token.JWT, time time.Time, user *entity.User) string {
+	accessToken, err := jwt.Get(time, user)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return accessToken
 }
