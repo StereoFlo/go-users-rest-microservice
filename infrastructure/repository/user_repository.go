@@ -52,18 +52,6 @@ func (repo *UserRepo) GetUserByEmail(email string) (*entity.User, error) {
 	return &user, nil
 }
 
-func (repo *UserRepo) GetByAccessToken(token string) (*entity.Token, error) {
-	var tokenEntity entity.Token
-	err := repo.Database.Debug().Where("access_token = ?", token).Take(&tokenEntity).Error
-	if err != nil {
-		return nil, err
-	}
-	if gorm.IsRecordNotFoundError(err) {
-		return nil, errors.New("user not found")
-	}
-	return &tokenEntity, nil
-}
-
 func (repo *UserRepo) GetList(limit int, offset int) ([]entity.User, error) {
 	var users []entity.User
 	err := repo.Database.Debug().Offset(offset).Limit(limit).Find(&users).Error
