@@ -42,12 +42,12 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		return
 	}
 
-	//passwordRaw := user.Password
-	//err = infrastructure.VerifyPassword(user.Password, passwordRaw)
-	//if err != nil {
-	//	context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
-	//	return
-	//}
+	passwordRaw := user.Password
+	err = infrastructure.VerifyPassword(user.Password, passwordRaw)
+	if err != nil {
+		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
+		return
+	}
 	jwt := jwt_token.NewToken()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
