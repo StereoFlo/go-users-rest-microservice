@@ -17,33 +17,29 @@ func NewAuth(userApp application.UserApp, responder *infrastructure.Responder) *
 	return &Auth{userApp, responder}
 }
 
-func (userApp *Auth) Auth() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		token := c.Request.Header.Get("X-ACCOUNT-TOKEN")
-		if token == "" {
-			c.JSON(401, userApp.responder.Fail("unauthorized"))
-			c.Abort()
-			return
-		}
-		jwt := jwt_token.NewToken()
-		_, err := jwt.Validate(token)
-		if err != nil {
-			c.JSON(401, userApp.responder.Fail(err))
-			c.Abort()
-			return
-		}
-		dbToken, err := userApp.userApp.UserRepo.GetUserByAccessToken(token)
-		if err != nil {
-			c.JSON(401, userApp.responder.Fail(err))
-			c.Abort()
-			return
-		}
-		if dbToken.AccessTokenExpire.Unix() < time.Now().Unix() {
-			c.JSON(401, userApp.responder.Fail("jwt-token is expired"))
-			c.Abort()
-			return
-		}
-
-		c.Next()
+func (userApp *Auth) Auth(c *gin.Context) {
+	token := c.Request.Header.Get("X-ACCOUNT-TOKEN")
+	if token == "" {
+		c.JSON(401, userApp.responder.Fail("unauthorized"))
+		c.Abort()
+		return
+	}
+	jwt := jwt_token.NewToken()
+	_, err := jwt.Validate(token)
+	if err != nil {
+		c.JSON(401, userApp.responder.Fail(err))
+		c.Abort()
+		return
+	}
+	dbToken, err := userApp.userApp.UserRepo.GetUserByAccessToken(token)
+	if err != nil {
+		c.JSON(401, userApp.responder.Fail(err))
+		c.Abort()
+		return
+	}
+	if dbToken.AccessTokenExpire.Unix() < time.Now().Unix() {
+		c.JSON(401, userApp.responder.Fail("jwt-token is expired"))
+		c.Abort()
+		return
 	}
 }
