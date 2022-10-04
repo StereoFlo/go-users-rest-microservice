@@ -42,13 +42,13 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		return
 	}
 
-	passwordRaw := user.Password
-	err = infrastructure.VerifyPassword(user.Password, passwordRaw)
-	if err != nil {
-		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
-		return
-	}
-	jwt := jwt_token.NewJWT()
+	//passwordRaw := user.Password
+	//err = infrastructure.VerifyPassword(user.Password, passwordRaw)
+	//if err != nil {
+	//	context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
+	//	return
+	//}
+	jwt := jwt_token.NewToken()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
 	accessToken := getToken(jwt, acExpire, user)
@@ -65,7 +65,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 	context.JSON(http.StatusOK, handler.responder.Success(token))
 }
 
-func getToken(jwt jwt_token.JWT, time time.Time, user *entity.User) string {
+func getToken(jwt jwt_token.Token, time time.Time, user *entity.User) string {
 	accessToken, err := jwt.Get(time, user)
 	if err != nil {
 		log.Fatalln(err)

@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"time"
 	"user-app/application"
@@ -26,22 +25,20 @@ func (userApp *Auth) Auth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		jwt := jwt_token.NewJWT()
+		jwt := jwt_token.NewToken()
 		_, err := jwt.Validate(token)
 		if err != nil {
-			fmt.Println(err)
 			c.JSON(401, userApp.responder.Fail(err))
 			c.Abort()
 			return
 		}
-		bdToken, err := userApp.userApp.UserRepo.GetUserByAccessToken(token)
+		dbToken, err := userApp.userApp.UserRepo.GetUserByAccessToken(token)
 		if err != nil {
 			c.JSON(401, userApp.responder.Fail(err))
 			c.Abort()
 			return
 		}
-
-		if bdToken.AccessTokenExpire.Unix() < time.Now().Unix() {
+		if dbToken.AccessTokenExpire.Unix() < time.Now().Unix() {
 			c.JSON(401, userApp.responder.Fail("jwt-token is expired"))
 			c.Abort()
 			return

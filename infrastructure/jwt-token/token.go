@@ -2,7 +2,6 @@ package jwt_token
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"log"
 	"os"
@@ -10,30 +9,40 @@ import (
 	"user-app/entity"
 )
 
-type JWT struct {
+type Data struct {
+	UserId  int `json:"user_id"`
+	TokenId int `json:"token_id"`
+}
+
+type Claim struct {
+	Data Data `json:"data"`
+	jwt.RegisteredClaims
+}
+
+type Token struct {
 	privateKey []byte
 	publicKey  []byte
 }
 
-func NewJWT() JWT {
+func NewToken() Token {
 	privateKey := getKeyData(os.Getenv("PRIVATE_KEY_FILE_PATH"))
 	publicKey := getKeyData(os.Getenv("PUBLIC_KEY_FILE_PATH"))
-	return JWT{
+	return Token{
 		privateKey: privateKey,
 		publicKey:  publicKey,
 	}
 }
 
-func (j JWT) Get(ttl time.Time, user *entity.User) (string, error) {
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(j.privateKey)
+func (t Token) Get(ttl time.Time, user *entity.User) (string, error) {
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(t.privateKey)
 	if err != nil {
 		return "", fmt.Errorf("create: parse key: %w", err)
 	}
 
 	now := time.Now()
 	claims := make(jwt.MapClaims)
-	claims["dat"] = gin.H{
-		"user_id": user.ID,
+	claims["data"] = Data{
+		UserId: user.ID,
 	}
 	claims["exp"] = ttl.Unix()
 	claims["iat"] = now.Unix()
@@ -47,13 +56,13 @@ func (j JWT) Get(ttl time.Time, user *entity.User) (string, error) {
 	return token, nil
 }
 
-func (j JWT) Validate(token string) (interface{}, error) {
-	key, err := jwt.ParseRSAPublicKeyFromPEM(j.publicKey)
+func (t Token) Validate(token string) (*Claim, error) {
+	var c Claim
+	key, err := jwt.ParseRSAPublicKeyFromPEM(t.publicKey)
 	if err != nil {
-		return "", fmt.Errorf("validate: parse key: %w", err)
+		return nil, fmt.Errorf("validate: parse key: %w", err)
 	}
-
-	tok, err := jwt.Parse(token, func(jwtToken *jwt.Token) (interface{}, error) {
+	tok, err := jwt.ParseWithClaims(token, &c, func(jwtToken *jwt.Token) (interface{}, error) {
 		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
 		}
@@ -63,13 +72,11 @@ func (j JWT) Validate(token string) (interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("validate: %w", err)
 	}
-
-	claims, ok := tok.Claims.(jwt.MapClaims)
+	_, ok := tok.Claims.(jwt.MapClaims)
 	if !ok || !tok.Valid {
 		return nil, fmt.Errorf("validate: invalid")
 	}
-
-	return claims["dat"], nil
+	return &c, nil
 }
 
 func getKeyData(path string) []byte {
