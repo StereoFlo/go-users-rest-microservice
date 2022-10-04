@@ -55,7 +55,7 @@ func (repo *UserRepo) GetUserByEmail(email string) (*entity.User, error) {
 	return &user, nil
 }
 
-func (repo *UserRepo) GetUserByAccessToken(token string) (*entity.Token, error) {
+func (repo *UserRepo) GetByAccessToken(token string) (*entity.Token, error) {
 	var tokenEntity entity.Token
 	err := repo.Database.Debug().Where("access_token = ?", token).Take(&tokenEntity).Error
 	if err != nil {

@@ -33,7 +33,7 @@ func (userApp *Auth) Auth(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	dbToken, err := userApp.userApp.UserRepo.GetUserByAccessToken(token)
+	dbToken, err := userApp.userApp.UserRepo.GetByAccessToken(token)
 	if err != nil {
 		c.JSON(401, userApp.responder.Fail(err))
 		c.Abort()

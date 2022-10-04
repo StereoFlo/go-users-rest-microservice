@@ -35,7 +35,7 @@ func (userApp *UserApp) GetList(limit int, offset int) ([]entity.User, error) {
 }
 
 func (userApp *UserApp) GetUserByAccessToken(token string) (*entity.Token, error) {
-	return userApp.UserRepo.GetUserByAccessToken(token)
+	return userApp.UserRepo.GetByAccessToken(token)
 }
 
 func (userApp *UserApp) GetUserCount() (int, error) {
