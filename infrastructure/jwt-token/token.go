@@ -62,20 +62,13 @@ func (t Token) Validate(token string) (*Claim, error) {
 	if err != nil {
 		return nil, fmt.Errorf("validate: parse key: %w", err)
 	}
-	tok, err := jwt.ParseWithClaims(token, &c, func(jwtToken *jwt.Token) (interface{}, error) {
+	_, err = jwt.ParseWithClaims(token, &c, func(jwtToken *jwt.Token) (interface{}, error) {
 		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
 		}
 
 		return key, nil
 	})
-	if err != nil {
-		return nil, fmt.Errorf("validate: %w", err)
-	}
-	_, ok := tok.Claims.(jwt.MapClaims)
-	if !ok || !tok.Valid {
-		return nil, fmt.Errorf("validate: invalid")
-	}
 	return &c, nil
 }
 

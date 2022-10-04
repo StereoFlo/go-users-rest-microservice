@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"time"
 	"user-app/application"
@@ -27,6 +28,7 @@ func (userApp *Auth) Auth(c *gin.Context) {
 	jwt := jwt_token.NewToken()
 	_, err := jwt.Validate(token)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(401, userApp.responder.Fail(err))
 		c.Abort()
 		return
