@@ -3,8 +3,6 @@ package middleware
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
-	"os"
 	"time"
 	"user-app/application"
 	"user-app/infrastructure"
@@ -28,16 +26,8 @@ func (userApp *Auth) Auth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		privateKey, err := os.ReadFile("private_key.pem")
-		if err != nil {
-			log.Fatalln(err)
-		}
-		publicKey, err := os.ReadFile("public_key.pem")
-		if err != nil {
-			log.Fatalln(err)
-		}
-		jwt := jwt_token.NewJWT(privateKey, publicKey)
-		_, err = jwt.Validate(token)
+		jwt := jwt_token.NewJWT()
+		_, err := jwt.Validate(token)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(401, userApp.responder.Fail(err))

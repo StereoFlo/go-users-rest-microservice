@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"log"
+	"os"
 	"time"
 	"user-app/entity"
 )
@@ -13,7 +15,9 @@ type JWT struct {
 	publicKey  []byte
 }
 
-func NewJWT(privateKey []byte, publicKey []byte) JWT {
+func NewJWT() JWT {
+	privateKey := getKeyData(os.Getenv("PRIVATE_KEY_FILE_PATH"))
+	publicKey := getKeyData(os.Getenv("PUBLIC_KEY_FILE_PATH"))
 	return JWT{
 		privateKey: privateKey,
 		publicKey:  publicKey,
@@ -27,7 +31,6 @@ func (j JWT) Get(ttl time.Time, user *entity.User) (string, error) {
 	}
 
 	now := time.Now()
-	fmt.Println(ttl)
 	claims := make(jwt.MapClaims)
 	claims["dat"] = gin.H{
 		"user_id": user.ID,
@@ -67,4 +70,12 @@ func (j JWT) Validate(token string) (interface{}, error) {
 	}
 
 	return claims["dat"], nil
+}
+
+func getKeyData(path string) []byte {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return data
 }

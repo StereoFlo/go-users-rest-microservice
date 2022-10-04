@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"os"
 	"time"
 	"user-app/application"
 	"user-app/entity"
@@ -49,9 +48,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
 	}
-	privateKey := getKeyData("private_key.pem")
-	publicKey := getKeyData("public_key.pem")
-	jwt := jwt_token.NewJWT(privateKey, publicKey)
+	jwt := jwt_token.NewJWT()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
 	accessToken := getToken(jwt, acExpire, user)
@@ -66,14 +63,6 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 	handler.UserApp.SaveToken(token)
 	user, err = handler.UserApp.GetUser(user.ID, 1)
 	context.JSON(http.StatusOK, handler.responder.Success(token))
-}
-
-func getKeyData(path string) []byte {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return data
 }
 
 func getToken(jwt jwt_token.JWT, time time.Time, user *entity.User) string {
