@@ -1,5 +1,5 @@
 # WIP
-not available yet. Read the code
+documentation is not available yet. Read the code
 
 ## Run the project
 copy .env file
