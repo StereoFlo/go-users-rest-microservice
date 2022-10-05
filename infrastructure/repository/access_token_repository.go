@@ -9,7 +9,7 @@ type AccessTokenRepo struct {
 	db *gorm.DB
 }
 
-func CreateTokenRepo(db *gorm.DB) *AccessTokenRepo {
+func NewTokenRepo(db *gorm.DB) *AccessTokenRepo {
 	return &AccessTokenRepo{db}
 }
 

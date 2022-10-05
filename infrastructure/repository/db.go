@@ -13,7 +13,7 @@ type Repositories struct {
 	db    *gorm.DB
 }
 
-func CreateRepositories(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) (*Repositories, error) {
+func NewRepositories(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) (*Repositories, error) {
 	dBUrl := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
 	db, err := gorm.Open(Dbdriver, dBUrl)
 	if err != nil {
@@ -22,8 +22,8 @@ func CreateRepositories(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName str
 	db.LogMode(true)
 
 	return &Repositories{
-		User:  CreateUserRepo(db),
-		Token: CreateTokenRepo(db),
+		User:  NewUserRepo(db),
+		Token: NewTokenRepo(db),
 		db:    db,
 	}, nil
 }

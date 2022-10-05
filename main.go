@@ -56,7 +56,7 @@ func getRepositories() *repository.Repositories {
 	user := os.Getenv("DB_USER")
 	dbname := os.Getenv("DB_NAME")
 	port := os.Getenv("DB_PORT")
-	repositories, err := repository.CreateRepositories(dbDriver, user, password, port, host, dbname)
+	repositories, err := repository.NewRepositories(dbDriver, user, password, port, host, dbname)
 	if err != nil {
 		panic(err)
 	}
