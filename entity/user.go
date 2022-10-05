@@ -69,15 +69,6 @@ func (u *User) Validate(action string) map[string]string {
 				errorMessages["invalid_email"] = "please provide a valid email"
 			}
 		}
-	case "forgot_password":
-		if u.Email == "" {
-			errorMessages["email_required"] = "email required"
-		}
-		if u.Email != "" {
-			if err = checkmail.ValidateFormat(u.Email); err != nil {
-				errorMessages["invalid_email"] = "please provide a valid email"
-			}
-		}
 	default:
 		if u.Password == "" {
 			errorMessages["password_required"] = "password is required"

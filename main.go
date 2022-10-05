@@ -14,16 +14,15 @@ import (
 
 func init() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("no env gotten")
+		log.Fatalln("no env gotten")
 	}
 }
 
 func main() {
-	var app application.UserApp
 	repositories := getRepositories()
 	defer repositories.Close()
 	repositories.Automigrate()
-	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
+	app := application.NewUserApp(repositories.User, repositories.Token)
 	responder := infrastructure.NewResponder()
 	authMiddleware := middleware.NewAuth(app, responder)
 	authHandlers := http.NewLoginHandler(app, responder)
@@ -45,8 +44,8 @@ func authRoutes(router *gin.Engine, handler *http.LoginHandler) {
 }
 
 func userRoutes(router *gin.Engine, users *http.UserHandler, middleware *middleware.Auth) {
-	router.POST("/v1/users", middleware.Auth(), users.SaveUser)
-	router.GET("/v1/users", middleware.Auth(), users.GetList)
+	router.POST("/v1/users", middleware.Auth, users.SaveUser)
+	router.GET("/v1/users", middleware.Auth, users.GetList)
 	router.GET("/v1/users/:user_id", users.GetUser)
 }
 
@@ -57,7 +56,7 @@ func getRepositories() *repository.Repositories {
 	user := os.Getenv("DB_USER")
 	dbname := os.Getenv("DB_NAME")
 	port := os.Getenv("DB_PORT")
-	repositories, err := repository.CreateRepositories(dbDriver, user, password, port, host, dbname)
+	repositories, err := repository.NewRepositories(dbDriver, user, password, port, host, dbname)
 	if err != nil {
 		panic(err)
 	}

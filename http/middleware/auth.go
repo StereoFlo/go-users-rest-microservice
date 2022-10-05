@@ -1,54 +1,47 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"time"
 	"user-app/application"
 	"user-app/infrastructure"
+	jwt_token "user-app/infrastructure/jwt-token"
 )
 
 type Auth struct {
-	userApp   application.UserApp
+	userApp   *application.UserApp
 	responder *infrastructure.Responder
 }
 
-func NewAuth(userApp application.UserApp, responder *infrastructure.Responder) *Auth {
+func NewAuth(userApp *application.UserApp, responder *infrastructure.Responder) *Auth {
 	return &Auth{userApp, responder}
 }
 
-func (userApp *Auth) Auth() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		token := c.Request.Header.Get("X-ACCOUNT-TOKEN")
-		if token == "" {
-			c.JSON(401, userApp.responder.Fail("unauthorized"))
-			c.Abort()
-			return
-		}
-
-		if !isValidUUID(token) {
-			c.JSON(401, userApp.responder.Fail("token is wrong"))
-			c.Abort()
-			return
-		}
-
-		bdToken, err := userApp.userApp.UserRepo.GetUserByAccessToken(token)
-		if err != nil {
-			c.JSON(401, userApp.responder.Fail(err))
-			c.Abort()
-			return
-		}
-
-		if bdToken.AccessTokenExpire.Unix() < time.Now().Unix() {
-			c.JSON(401, userApp.responder.Fail("token is expired"))
-			c.Abort()
-			return
-		}
-
-		c.Next()
+func (userApp *Auth) Auth(c *gin.Context) {
+	token := c.Request.Header.Get("X-ACCOUNT-TOKEN")
+	if token == "" {
+		c.JSON(401, userApp.responder.Fail("Unauthorized"))
+		c.Abort()
+		return
 	}
-}
-func isValidUUID(u string) bool {
-	_, err := uuid.Parse(u)
-	return err == nil
+	jwt := jwt_token.NewToken()
+	data, err := jwt.Validate(token)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(401, userApp.responder.Fail(err))
+		c.Abort()
+		return
+	}
+	dbToken, err := userApp.userApp.GetTokenByUId(data.Data.TokenId)
+	if err != nil {
+		c.JSON(401, userApp.responder.Fail("Token was not found"))
+		c.Abort()
+		return
+	}
+	if dbToken.AccessTokenExpire.Unix() < time.Now().Unix() {
+		c.JSON(401, userApp.responder.Fail("Token is expired"))
+		c.Abort()
+		return
+	}
 }

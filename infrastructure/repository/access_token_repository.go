@@ -9,15 +9,23 @@ type AccessTokenRepo struct {
 	db *gorm.DB
 }
 
-func CreateTokenRepo(db *gorm.DB) *AccessTokenRepo {
+func NewTokenRepo(db *gorm.DB) *AccessTokenRepo {
 	return &AccessTokenRepo{db}
 }
 
-func (repo AccessTokenRepo) SaveToken(token *entity.Token) (*entity.Token, map[string]string) {
-	dbErr := map[string]string{}
+func (repo AccessTokenRepo) SaveToken(token *entity.Token) (*entity.Token, error) {
 	err := repo.db.Debug().Save(&token).Error
 	if err != nil {
-		return nil, dbErr
+		return nil, err
 	}
 	return token, nil
+}
+
+func (repo AccessTokenRepo) GetTokenByUId(id string) (*entity.Token, error) {
+	var token entity.Token
+	err := repo.db.Debug().Where("uuid = ?", id).Take(&token).Error
+	if err != nil {
+		return nil, err
+	}
+	return &token, nil
 }

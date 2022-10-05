@@ -11,20 +11,17 @@ type UserRepo struct {
 	Database *gorm.DB
 }
 
-func CreateUserRepo(db *gorm.DB) *UserRepo {
+func NewUserRepo(db *gorm.DB) *UserRepo {
 	return &UserRepo{db}
 }
 
-func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, map[string]string) {
-	dbErr := map[string]string{}
+func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, error) {
 	err := repo.Database.Debug().Create(&user).Error
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "Duplicate") {
-			dbErr["email_taken"] = "email already taken"
-			return nil, dbErr
+			return nil, err
 		}
-		dbErr["db_error"] = "database error"
-		return nil, dbErr
+		return nil, err
 	}
 	return user, nil
 }
@@ -53,18 +50,6 @@ func (repo *UserRepo) GetUserByEmail(email string) (*entity.User, error) {
 		return nil, errors.New("user not found")
 	}
 	return &user, nil
-}
-
-func (repo *UserRepo) GetUserByAccessToken(token string) (*entity.Token, error) {
-	var tokenEntity entity.Token
-	err := repo.Database.Debug().Where("access_token = ?", token).Take(&tokenEntity).Error
-	if err != nil {
-		return nil, err
-	}
-	if gorm.IsRecordNotFoundError(err) {
-		return nil, errors.New("user not found")
-	}
-	return &tokenEntity, nil
 }
 
 func (repo *UserRepo) GetList(limit int, offset int) ([]entity.User, error) {

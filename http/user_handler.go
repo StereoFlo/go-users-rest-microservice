@@ -10,11 +10,11 @@ import (
 )
 
 type UserHandler struct {
-	App       application.UserApp
+	App       *application.UserApp
 	responder *infrastructure.Responder
 }
 
-func NewUserHandler(userApp application.UserApp, responder *infrastructure.Responder) *UserHandler {
+func NewUserHandler(userApp *application.UserApp, responder *infrastructure.Responder) *UserHandler {
 	return &UserHandler{
 		App:       userApp,
 		responder: responder,
