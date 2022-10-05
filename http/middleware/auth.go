@@ -10,11 +10,11 @@ import (
 )
 
 type Auth struct {
-	userApp   application.UserApp
+	userApp   *application.UserApp
 	responder *infrastructure.Responder
 }
 
-func NewAuth(userApp application.UserApp, responder *infrastructure.Responder) *Auth {
+func NewAuth(userApp *application.UserApp, responder *infrastructure.Responder) *Auth {
 	return &Auth{userApp, responder}
 }
 

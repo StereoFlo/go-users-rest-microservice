@@ -6,8 +6,12 @@ import (
 )
 
 type UserApp struct {
-	UserRepo        repository.UserRepo
-	AccessTokenRepo repository.AccessTokenRepo
+	UserRepo        *repository.UserRepo
+	AccessTokenRepo *repository.AccessTokenRepo
+}
+
+func NewUserApp(userRepo *repository.UserRepo, accessTokenRepo *repository.AccessTokenRepo) *UserApp {
+	return &UserApp{UserRepo: userRepo, AccessTokenRepo: accessTokenRepo}
 }
 
 func (userApp *UserApp) SaveUser(user *entity.User) (*entity.User, error) {

@@ -14,16 +14,15 @@ import (
 
 func init() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("no env gotten")
+		log.Fatalln("no env gotten")
 	}
 }
 
 func main() {
-	var app application.UserApp
 	repositories := getRepositories()
 	defer repositories.Close()
 	repositories.Automigrate()
-	app = application.UserApp{UserRepo: *repositories.User, AccessTokenRepo: *repositories.Token}
+	app := application.NewUserApp(repositories.User, repositories.Token)
 	responder := infrastructure.NewResponder()
 	authMiddleware := middleware.NewAuth(app, responder)
 	authHandlers := http.NewLoginHandler(app, responder)

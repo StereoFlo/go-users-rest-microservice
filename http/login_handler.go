@@ -12,11 +12,11 @@ import (
 )
 
 type LoginHandler struct {
-	UserApp   application.UserApp
+	UserApp   *application.UserApp
 	responder *infrastructure.Responder
 }
 
-func NewLoginHandler(userApp application.UserApp, responder *infrastructure.Responder) *LoginHandler {
+func NewLoginHandler(userApp *application.UserApp, responder *infrastructure.Responder) *LoginHandler {
 	return &LoginHandler{
 		UserApp:   userApp,
 		responder: responder,
@@ -24,26 +24,25 @@ func NewLoginHandler(userApp application.UserApp, responder *infrastructure.Resp
 }
 
 func (handler *LoginHandler) Login(context *gin.Context) {
-	var user *entity.User
+	var reqUser *entity.User
 	var token *entity.Token
-	err := context.ShouldBindJSON(&user)
+	err := context.ShouldBindJSON(&reqUser)
 	if err != nil {
 		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
 		return
 	}
-	validateUser := user.Validate("login")
+	validateUser := reqUser.Validate("login")
 	if len(validateUser) > 0 {
 		context.JSON(http.StatusUnprocessableEntity, validateUser)
 		return
 	}
-	user, err = handler.UserApp.GetUserByEmail(user.Email)
+	dbUser, err := handler.UserApp.GetUserByEmail(reqUser.Email)
 	if err != nil {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("user not found"))
 		return
 	}
 
-	passwordRaw := user.Password
-	err = infrastructure.VerifyPassword(user.Password, passwordRaw)
+	err = infrastructure.VerifyPassword(reqUser.Password, dbUser.Password)
 	if err != nil {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
@@ -51,15 +50,15 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 	jwt := jwt_token.NewToken()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
-	accessToken := getToken(jwt, acExpire, user)
-	refreshToken := getToken(jwt, rtExpire, user)
+	accessToken := getToken(jwt, acExpire, dbUser)
+	refreshToken := getToken(jwt, rtExpire, dbUser)
 	t, _ := jwt.Validate(accessToken)
 	token = &entity.Token{
 		AccessToken:        accessToken,
 		RefreshToken:       refreshToken,
 		AccessTokenExpire:  acExpire,
 		RefreshTokenExpire: rtExpire,
-		UserId:             user.ID,
+		UserId:             dbUser.ID,
 		UUID:               t.Data.TokenId,
 	}
 	_, err = handler.UserApp.SaveToken(token)
@@ -67,7 +66,6 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
-	user, err = handler.UserApp.GetUser(user.ID, 1)
 	context.JSON(http.StatusOK, handler.responder.Success(token))
 }
 
