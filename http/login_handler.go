@@ -33,7 +33,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 	}
 	validateUser := reqUser.Validate("login")
 	if len(validateUser) > 0 {
-		context.JSON(http.StatusUnprocessableEntity, validateUser)
+		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail(validateUser))
 		return
 	}
 	dbUser, err := handler.UserApp.GetUserByEmail(reqUser.Email)
