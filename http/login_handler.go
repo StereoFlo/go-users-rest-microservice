@@ -70,7 +70,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 }
 
 func getToken(jwt jwt_token.Token, time time.Time, user *entity.User) string {
-	accessToken, err := jwt.Get(time, user)
+	accessToken, err := jwt.Get(time, user.ID)
 	if err != nil {
 		log.Fatalln(err)
 	}

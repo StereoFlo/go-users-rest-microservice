@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"time"
-	"user-app/entity"
 )
 
 type Data struct {
@@ -34,7 +33,7 @@ func NewToken() Token {
 	}
 }
 
-func (t Token) Get(ttl time.Time, user *entity.User) (string, error) {
+func (t Token) Get(ttl time.Time, userId int) (string, error) {
 	key, err := jwt.ParseRSAPrivateKeyFromPEM(t.privateKey)
 	if err != nil {
 		return "", fmt.Errorf("create: parse key: %w", err)
@@ -44,7 +43,7 @@ func (t Token) Get(ttl time.Time, user *entity.User) (string, error) {
 	claims := make(jwt.MapClaims)
 	uid := uuid.New()
 	claims["data"] = Data{
-		UserId:  user.ID,
+		UserId:  userId,
 		TokenId: uid.String(),
 	}
 	claims["exp"] = ttl.Unix()
