@@ -23,18 +23,19 @@ func NewUserHandler(userApp *application.UserApp, responder *infrastructure.Resp
 
 func (handler *UserHandler) SaveUser(context *gin.Context) {
 	var user entity.User
-	if err := context.ShouldBindJSON(&user); err != nil {
+	err := context.ShouldBindJSON(&user)
+	if err != nil {
 		context.JSON(http.StatusBadRequest, handler.responder.Fail(gin.H{
 			"invalid_json": "invalid json",
 		}))
 		return
 	}
-	newUser, err := handler.App.SaveUser(&user)
+	_, err = handler.App.SaveUser(&user)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, handler.responder.Fail(err))
 		return
 	}
-	context.JSON(http.StatusCreated, handler.responder.Success(newUser.GetUser()))
+	context.JSON(http.StatusCreated, handler.responder.Success(user.GetUser()))
 }
 
 func (handler *UserHandler) GetList(context *gin.Context) {
