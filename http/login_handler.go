@@ -40,7 +40,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		return
 	}
 
-	err = infrastructure.VerifyPassword(reqUser.Password, dbUser.Password)
+	err = infrastructure.VerifyPassword(dbUser.Password, reqUser.Password)
 	if err != nil {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
