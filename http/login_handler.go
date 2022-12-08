@@ -24,7 +24,6 @@ func NewLoginHandler(userApp *application.UserApp, responder *infrastructure.Res
 
 func (handler *LoginHandler) Login(context *gin.Context) {
 	var reqUser *entity.User
-	var token *entity.Token
 	err := context.ShouldBindJSON(&reqUser)
 	if err != nil {
 		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
@@ -46,6 +45,15 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
 	}
+	token, done := handler.makeNewToken(context, dbUser)
+	if done {
+		return
+	}
+	context.JSON(http.StatusOK, handler.responder.Success(token))
+}
+
+func (handler *LoginHandler) makeNewToken(context *gin.Context, dbUser *entity.User) (*entity.Token, bool) {
+	var token *entity.Token
 	jwt := infrastructure.NewToken()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
@@ -60,12 +68,12 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		UserId:             dbUser.ID,
 		UUID:               t.Data.TokenId,
 	}
-	_, err = handler.UserApp.SaveToken(token)
+	_, err := handler.UserApp.SaveToken(token)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
-		return
+		return nil, true
 	}
-	context.JSON(http.StatusOK, handler.responder.Success(token))
+	return token, false
 }
 
 func getToken(jwt infrastructure.Token, time time.Time, user *entity.User) string {
