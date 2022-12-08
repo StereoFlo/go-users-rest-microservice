@@ -1,6 +1,7 @@
-package jwt_token
+package infrastructure
 
 import (
+	"crypto/rsa"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
@@ -9,13 +10,13 @@ import (
 	"time"
 )
 
-type Data struct {
+type TokenData struct {
 	UserId  int    `json:"user_id"`
 	TokenId string `json:"token_id"`
 }
 
 type Claim struct {
-	Data Data `json:"data"`
+	Data TokenData `json:"data"`
 	jwt.RegisteredClaims
 }
 
@@ -42,7 +43,7 @@ func (t Token) Get(ttl time.Time, userId int) (string, error) {
 	now := time.Now()
 	claims := make(jwt.MapClaims)
 	uid := uuid.New()
-	claims["data"] = Data{
+	claims["data"] = TokenData{
 		UserId:  userId,
 		TokenId: uid.String(),
 	}
@@ -64,14 +65,23 @@ func (t Token) Validate(token string) (*Claim, error) {
 	if err != nil {
 		return nil, fmt.Errorf("validate: parse key: %w", err)
 	}
-	_, err = jwt.ParseWithClaims(token, &c, func(jwtToken *jwt.Token) (interface{}, error) {
-		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
+	_, err = jwt.ParseWithClaims(token, &c, t.parseToken(key))
+	if err != nil {
+		return nil, err
+	}
+
+	return &c, nil
+}
+
+func (t Token) parseToken(key *rsa.PublicKey) func(jwtToken *jwt.Token) (interface{}, error) {
+	return func(jwtToken *jwt.Token) (interface{}, error) {
+		_, ok := jwtToken.Method.(*jwt.SigningMethodRSA)
+		if !ok {
+			return nil, fmt.Errorf("unexpected method")
 		}
 
 		return key, nil
-	})
-	return &c, nil
+	}
 }
 
 func getKeyData(path string) []byte {

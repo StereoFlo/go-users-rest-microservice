@@ -8,7 +8,6 @@ import (
 	"user-app/application"
 	"user-app/entity"
 	"user-app/infrastructure"
-	"user-app/infrastructure/jwt-token"
 )
 
 type LoginHandler struct {
@@ -47,7 +46,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
 	}
-	jwt := jwt_token.NewToken()
+	jwt := infrastructure.NewToken()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
 	accessToken := getToken(jwt, acExpire, dbUser)
@@ -69,7 +68,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 	context.JSON(http.StatusOK, handler.responder.Success(token))
 }
 
-func getToken(jwt jwt_token.Token, time time.Time, user *entity.User) string {
+func getToken(jwt infrastructure.Token, time time.Time, user *entity.User) string {
 	accessToken, err := jwt.Get(time, user.ID)
 	if err != nil {
 		log.Fatalln(err)

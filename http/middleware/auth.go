@@ -6,7 +6,6 @@ import (
 	"time"
 	"user-app/application"
 	"user-app/infrastructure"
-	jwt_token "user-app/infrastructure/jwt-token"
 )
 
 type Auth struct {
@@ -25,7 +24,7 @@ func (userApp *Auth) Auth(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	jwt := jwt_token.NewToken()
+	jwt := infrastructure.NewToken()
 	data, err := jwt.Validate(token)
 	if err != nil {
 		fmt.Println(err)
