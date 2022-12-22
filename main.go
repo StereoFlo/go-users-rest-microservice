@@ -21,7 +21,7 @@ func init() {
 func main() {
 	repositories := getRepositories()
 	defer repositories.Close()
-	repositories.Automigrate()
+	repositories.Automigrate() //todo this is for dev environment
 	app := application.NewUserApp(repositories.User, repositories.Token)
 	responder := infrastructure.NewResponder()
 	authMiddleware := middleware.NewAuth(app, responder)
@@ -40,13 +40,15 @@ func main() {
 }
 
 func authRoutes(router *gin.Engine, handler *http.LoginHandler) {
-	router.POST("/auth/login", handler.Login)
+	auth := router.Group("/v1/auth")
+	auth.POST("/login", handler.Login)
 }
 
 func userRoutes(router *gin.Engine, users *http.UserHandler, middleware *middleware.Auth) {
-	router.POST("/v1/users", middleware.Auth, users.SaveUser)
-	router.GET("/v1/users", middleware.Auth, users.GetList)
-	router.GET("/v1/users/:user_id", users.GetUser)
+	userGroup := router.Group("/v1/users")
+	userGroup.POST("/", middleware.Auth, users.SaveUser)
+	userGroup.GET("/", middleware.Auth, users.GetList)
+	userGroup.GET("/:user_id", middleware.Auth, users.GetUser)
 }
 
 func getRepositories() *repository.Repositories {
