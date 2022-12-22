@@ -29,7 +29,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
 		return
 	}
-	validateUser := reqUser.Validate("login")
+	validateUser := infrastructure.ValidateUser(reqUser, infrastructure.Login)
 	if len(validateUser) > 0 {
 		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail(validateUser))
 		return
