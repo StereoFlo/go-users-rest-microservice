@@ -11,13 +11,13 @@ import (
 )
 
 type LoginHandler struct {
-	UserApp   *application.UserApp
+	userApp   *application.UserApp
 	responder *infrastructure.Responder
 }
 
 func NewLoginHandler(userApp *application.UserApp, responder *infrastructure.Responder) *LoginHandler {
 	return &LoginHandler{
-		UserApp:   userApp,
+		userApp:   userApp,
 		responder: responder,
 	}
 }
@@ -34,7 +34,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail(validateUser))
 		return
 	}
-	dbUser, err := handler.UserApp.GetUserByEmail(reqUser.Email)
+	dbUser, err := handler.userApp.GetUserByEmail(reqUser.Email)
 	if err != nil {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("user not found"))
 		return
@@ -68,7 +68,7 @@ func (handler *LoginHandler) makeNewToken(context *gin.Context, dbUser *entity.U
 		UserId:             dbUser.ID,
 		UUID:               t.Data.TokenId,
 	}
-	_, err := handler.UserApp.SaveToken(token)
+	_, err := handler.userApp.SaveToken(token)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return nil, true

@@ -10,13 +10,13 @@ import (
 )
 
 type UserHandler struct {
-	App       *application.UserApp
+	userApp   *application.UserApp
 	responder *infrastructure.Responder
 }
 
 func NewUserHandler(userApp *application.UserApp, responder *infrastructure.Responder) *UserHandler {
 	return &UserHandler{
-		App:       userApp,
+		userApp:   userApp,
 		responder: responder,
 	}
 }
@@ -30,7 +30,7 @@ func (handler *UserHandler) SaveUser(ctx *gin.Context) {
 		}))
 		return
 	}
-	_, err = handler.App.SaveUser(&user)
+	_, err = handler.userApp.SaveUser(&user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(err))
 		return
@@ -45,13 +45,13 @@ func (handler *UserHandler) GetList(ctx *gin.Context) {
 		limit = 10
 	}
 	offset, _ := strconv.Atoi(ctx.Query("offset"))
-	cnt, _ := handler.App.GetUserCount()
+	cnt, _ := handler.userApp.GetUserCount()
 	if cnt == 0 {
 		ctx.JSON(http.StatusOK, handler.responder.SuccessList(0, limit, offset, gin.H{}))
 		return
 	}
 	var err error
-	users, err = handler.App.GetList(limit, offset)
+	users, err = handler.userApp.GetList(limit, offset)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
@@ -65,7 +65,7 @@ func (handler *UserHandler) GetUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-	user, err := handler.App.GetUser(userId, 1)
+	user, err := handler.userApp.GetUser(userId, 1)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
