@@ -22,9 +22,6 @@ func ValidateUser(user *entity.User, action string) map[string]string {
 		if user.Email == "" {
 			errorMessages["email_required"] = "email is required"
 		}
-		if user.Email != "" {
-			errorMessages["invalid_email"] = "please provide a valid email"
-		}
 		err = checkmail.ValidateFormat(user.Email)
 		if err != nil {
 			errorMessages["invalid_email"] = "please provide a valid email"
