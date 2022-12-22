@@ -14,11 +14,3 @@ type User struct {
 }
 
 type Users []User
-
-func (users Users) GetUsers() []*User {
-	result := make([]*User, len(users))
-	for index, user := range users {
-		result[index] = &user
-	}
-	return result
-}
