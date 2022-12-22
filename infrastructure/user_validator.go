@@ -23,9 +23,11 @@ func ValidateUser(user *entity.User, action string) map[string]string {
 			errorMessages["email_required"] = "email is required"
 		}
 		if user.Email != "" {
-			if err = checkmail.ValidateFormat(user.Email); err != nil {
-				errorMessages["invalid_email"] = "please provide a valid email"
-			}
+			errorMessages["invalid_email"] = "please provide a valid email"
+		}
+		err = checkmail.ValidateFormat(user.Email)
+		if err != nil {
+			errorMessages["invalid_email"] = "please provide a valid email"
 		}
 	default:
 		errorMessages["password_required"] = "unknown action"
