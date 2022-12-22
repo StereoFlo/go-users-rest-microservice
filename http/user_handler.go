@@ -21,54 +21,54 @@ func NewUserHandler(userApp *application.UserApp, responder *infrastructure.Resp
 	}
 }
 
-func (handler *UserHandler) SaveUser(context *gin.Context) {
+func (handler *UserHandler) SaveUser(ctx *gin.Context) {
 	var user entity.User
-	err := context.ShouldBindJSON(&user)
+	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, handler.responder.Fail(gin.H{
+		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(gin.H{
 			"invalid_json": "invalid json",
 		}))
 		return
 	}
 	_, err = handler.App.SaveUser(&user)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, handler.responder.Fail(err))
+		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(err))
 		return
 	}
-	context.JSON(http.StatusCreated, handler.responder.Success(user))
+	ctx.JSON(http.StatusCreated, handler.responder.Success(user))
 }
 
-func (handler *UserHandler) GetList(context *gin.Context) {
+func (handler *UserHandler) GetList(ctx *gin.Context) {
 	users := entity.Users{}
-	limit, _ := strconv.Atoi(context.Query("limit"))
+	limit, _ := strconv.Atoi(ctx.Query("limit"))
 	if limit == 0 {
 		limit = 10
 	}
-	offset, _ := strconv.Atoi(context.Query("offset"))
+	offset, _ := strconv.Atoi(ctx.Query("offset"))
 	cnt, _ := handler.App.GetUserCount()
 	if cnt == 0 {
-		context.JSON(http.StatusOK, handler.responder.SuccessList(0, limit, offset, gin.H{}))
+		ctx.JSON(http.StatusOK, handler.responder.SuccessList(0, limit, offset, gin.H{}))
 		return
 	}
 	var err error
 	users, err = handler.App.GetList(limit, offset)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
-	context.JSON(http.StatusOK, handler.responder.SuccessList(cnt, limit, offset, users))
+	ctx.JSON(http.StatusOK, handler.responder.SuccessList(cnt, limit, offset, users))
 }
 
-func (handler *UserHandler) GetUser(context *gin.Context) {
-	userId, err := strconv.Atoi(context.Param("user_id"))
+func (handler *UserHandler) GetUser(ctx *gin.Context) {
+	userId, err := strconv.Atoi(ctx.Param("user_id"))
 	if err != nil {
-		context.JSON(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
 	user, err := handler.App.GetUser(userId, 1)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
-	context.JSON(http.StatusOK, handler.responder.Success(user))
+	ctx.JSON(http.StatusOK, handler.responder.Success(user))
 }
