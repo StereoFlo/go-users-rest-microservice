@@ -13,8 +13,6 @@ const (
 
 func ValidateUser(user *entity.User, action string) map[string]string {
 	var errorMessages = make(map[string]string)
-	var err error
-
 	switch strings.ToLower(action) {
 	case Login:
 		if user.Password == "" {
@@ -23,7 +21,7 @@ func ValidateUser(user *entity.User, action string) map[string]string {
 		if user.Email == "" {
 			errorMessages["email_required"] = "email is required"
 		}
-		err = checkmail.ValidateFormat(user.Email)
+		err := checkmail.ValidateFormat(user.Email)
 		if err != nil {
 			errorMessages["invalid_email"] = "please provide a valid email"
 		}
