@@ -34,7 +34,7 @@ func main() {
 	userRoutes(router, userHandlers, authMiddleware)
 	appPort := os.Getenv("API_PORT")
 	if appPort == "" {
-		appPort = "8081"
+		log.Fatal("API_PORT variable is not set in the .env file")
 	}
 	log.Fatal(router.Run(":" + appPort))
 }
