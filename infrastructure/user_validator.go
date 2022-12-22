@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"fmt"
 	"github.com/badoux/checkmail"
 	"strings"
 	"user-app/entity"
@@ -27,7 +28,7 @@ func ValidateUser(user *entity.User, action string) map[string]string {
 			errorMessages["invalid_email"] = "please provide a valid email"
 		}
 	default:
-		errorMessages["password_required"] = "unknown action"
+		errorMessages["password_required"] = fmt.Sprintf("unknown action %s", action)
 	}
 	return errorMessages
 }
