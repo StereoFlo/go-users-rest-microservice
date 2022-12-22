@@ -3,7 +3,6 @@ package repository
 import (
 	"errors"
 	"github.com/jinzhu/gorm"
-	"strings"
 	"user-app/entity"
 )
 
@@ -18,9 +17,6 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, error) {
 	err := repo.db.Debug().Create(&user).Error
 	if err != nil {
-		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "Duplicate") {
-			return nil, err
-		}
 		return nil, err
 	}
 	return user, nil
@@ -68,7 +64,7 @@ func (repo *UserRepo) GetCount() (int, error) {
 	var cnt int
 	err := repo.db.Table("users").Debug().Count(&cnt).Error
 	if err != nil {
-		return cnt, err
+		return 0, err
 	}
 
 	return cnt, nil
