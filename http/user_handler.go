@@ -35,7 +35,7 @@ func (handler *UserHandler) SaveUser(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, handler.responder.Fail(err))
 		return
 	}
-	context.JSON(http.StatusCreated, handler.responder.Success(user.GetUser()))
+	context.JSON(http.StatusCreated, handler.responder.Success(user))
 }
 
 func (handler *UserHandler) GetList(context *gin.Context) {
@@ -70,5 +70,5 @@ func (handler *UserHandler) GetUser(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
-	context.JSON(http.StatusOK, handler.responder.Success(user.GetUser()))
+	context.JSON(http.StatusOK, handler.responder.Success(user))
 }
