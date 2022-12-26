@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
-	"log"
 	"os"
 	"time"
 )
@@ -21,25 +20,27 @@ type Claim struct {
 }
 
 type Token struct {
-	privateKey []byte
-	publicKey  []byte
+	privateKey *rsa.PrivateKey
+	publicKey  *rsa.PublicKey
 }
 
-func NewToken() Token {
-	privateKey := getKeyData(os.Getenv("PRIVATE_KEY_FILE_PATH"))
-	publicKey := getKeyData(os.Getenv("PUBLIC_KEY_FILE_PATH"))
-	return Token{
+func NewToken() (*Token, error) {
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(os.Getenv("JWT_PRIVATE_KEY")))
+	if err != nil {
+		return nil, err
+	}
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(os.Getenv("JWT_PUBLIC_KEY")))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Token{
 		privateKey: privateKey,
 		publicKey:  publicKey,
-	}
+	}, nil
 }
 
 func (t Token) Get(ttl time.Time, userId int) (string, error) {
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(t.privateKey)
-	if err != nil {
-		return "", fmt.Errorf("create: parse key: %w", err)
-	}
-
 	now := time.Now()
 	claims := make(jwt.MapClaims)
 	uid := uuid.New()
@@ -51,7 +52,7 @@ func (t Token) Get(ttl time.Time, userId int) (string, error) {
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(t.privateKey)
 	if err != nil {
 		return "", fmt.Errorf("create: sign token: %w", err)
 	}
@@ -61,11 +62,7 @@ func (t Token) Get(ttl time.Time, userId int) (string, error) {
 
 func (t Token) Validate(token string) (*Claim, error) {
 	var c Claim
-	key, err := jwt.ParseRSAPublicKeyFromPEM(t.publicKey)
-	if err != nil {
-		return nil, fmt.Errorf("validate: parse key: %w", err)
-	}
-	_, err = jwt.ParseWithClaims(token, &c, t.parseToken(key))
+	_, err := jwt.ParseWithClaims(token, &c, t.parseToken(t.publicKey))
 	if err != nil {
 		return nil, err
 	}
@@ -82,12 +79,4 @@ func (t Token) parseToken(key *rsa.PublicKey) func(jwtToken *jwt.Token) (interfa
 
 		return key, nil
 	}
-}
-
-func getKeyData(path string) []byte {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return data
 }
