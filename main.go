@@ -24,8 +24,12 @@ func main() {
 	repositories.Automigrate() //todo this is for dev environment
 	app := application.NewUserApp(repositories.User, repositories.Token)
 	responder := infrastructure.NewResponder()
-	authMiddleware := middleware.NewAuth(app, responder)
-	authHandlers := http.NewLoginHandler(app, responder)
+	jwtToken, err := infrastructure.NewToken()
+	if err != nil {
+		log.Fatal("Initialization JWT Error: " + err.Error())
+	}
+	authMiddleware := middleware.NewAuth(app, responder, jwtToken)
+	authHandlers := http.NewLoginHandler(app, responder, jwtToken)
 	userHandlers := http.NewUserHandler(app, responder)
 
 	router := gin.Default()

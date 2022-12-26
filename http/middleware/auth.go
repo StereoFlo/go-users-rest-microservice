@@ -11,10 +11,11 @@ import (
 type Auth struct {
 	userApp   *application.UserApp
 	responder *infrastructure.Responder
+	jwtToken  *infrastructure.Token
 }
 
-func NewAuth(userApp *application.UserApp, responder *infrastructure.Responder) *Auth {
-	return &Auth{userApp, responder}
+func NewAuth(userApp *application.UserApp, responder *infrastructure.Responder, jwtToken *infrastructure.Token) *Auth {
+	return &Auth{userApp, responder, jwtToken}
 }
 
 func (userApp *Auth) Auth(c *gin.Context) {
@@ -24,8 +25,7 @@ func (userApp *Auth) Auth(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	jwt := infrastructure.NewToken()
-	data, err := jwt.Validate(token)
+	data, err := userApp.jwtToken.Validate(token)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(401, userApp.responder.Fail(err))
