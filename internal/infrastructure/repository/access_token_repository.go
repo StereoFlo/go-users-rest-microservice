@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/jinzhu/gorm"
-	"user-app/entity"
+	"user-app/internal/entity"
 )
 
 type AccessTokenRepo struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"user-app/entity"
+	entity2 "user-app/internal/entity"
 )
 
 type Repositories struct {
@@ -33,5 +33,5 @@ func (repo *Repositories) Close() error {
 }
 
 func (repo *Repositories) Automigrate() error {
-	return repo.db.AutoMigrate(&entity.User{}, &entity.Token{}).Error
+	return repo.db.AutoMigrate(&entity2.User{}, &entity2.Token{}).Error
 }

@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"user-app/application"
-	"user-app/entity"
-	"user-app/infrastructure"
+	"user-app/internal/application"
+	"user-app/internal/entity"
+	"user-app/internal/infrastructure"
 )
 
 type UserHandler struct {

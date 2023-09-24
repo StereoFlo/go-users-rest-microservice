@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 	"github.com/jinzhu/gorm"
-	"user-app/entity"
+	"user-app/internal/entity"
 )
 
 type UserRepo struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/badoux/checkmail"
 	"strings"
-	"user-app/entity"
+	"user-app/internal/entity"
 )
 
 const (

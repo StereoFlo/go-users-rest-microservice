@@ -5,11 +5,11 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"os"
-	"user-app/application"
-	"user-app/http"
-	"user-app/http/middleware"
-	"user-app/infrastructure"
-	"user-app/infrastructure/repository"
+	"user-app/internal/application"
+	http2 "user-app/internal/http"
+	middleware2 "user-app/internal/http/middleware"
+	"user-app/internal/infrastructure"
+	"user-app/internal/infrastructure/repository"
 )
 
 func init() {
@@ -24,27 +24,32 @@ func main() {
 	repositories.Automigrate() //todo this is for dev environment
 	app := application.NewUserApp(repositories.User, repositories.Token)
 	responder := infrastructure.NewResponder()
-	authMiddleware := middleware.NewAuth(app, responder)
-	authHandlers := http.NewLoginHandler(app, responder)
-	userHandlers := http.NewUserHandler(app, responder)
+	authMiddleware := middleware2.NewAuth(app, responder)
+	authHandlers := http2.NewLoginHandler(app, responder)
+	userHandlers := http2.NewUserHandler(app, responder)
 
 	router := gin.Default()
-	router.Use(middleware.Cors())
+	router.Use(middleware2.Cors())
+	router.Static("/static", "./static")
 	authRoutes(router, authHandlers)
 	userRoutes(router, userHandlers, authMiddleware)
 	appPort := os.Getenv("API_PORT")
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(404, responder.Fail("404 not found"))
+	})
 	if appPort == "" {
 		log.Fatal("API_PORT variable is not set in the .env file")
 	}
+
 	log.Fatal(router.Run(":" + appPort))
 }
 
-func authRoutes(router *gin.Engine, handler *http.LoginHandler) {
+func authRoutes(router *gin.Engine, handler *http2.LoginHandler) {
 	auth := router.Group("/v1/auth")
 	auth.POST("/login", handler.Login)
 }
 
-func userRoutes(router *gin.Engine, users *http.UserHandler, middleware *middleware.Auth) {
+func userRoutes(router *gin.Engine, users *http2.UserHandler, middleware *middleware2.Auth) {
 	userGroup := router.Group("/v1/users")
 	userGroup.POST("/", middleware.Auth, users.SaveUser)
 	userGroup.GET("/", middleware.Auth, users.GetList)
