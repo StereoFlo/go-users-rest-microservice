@@ -5,15 +5,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"time"
 	"user-app/internal/application"
-	infrastructure2 "user-app/internal/infrastructure"
+	"user-app/pkg/utils"
 )
 
 type Auth struct {
 	userApp   *application.UserApp
-	responder *infrastructure2.Responder
+	responder *utils.Responder
 }
 
-func NewAuth(userApp *application.UserApp, responder *infrastructure2.Responder) *Auth {
+func NewAuth(userApp *application.UserApp, responder *utils.Responder) *Auth {
 	return &Auth{userApp, responder}
 }
 
@@ -24,7 +24,7 @@ func (userApp *Auth) Auth(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	jwt := infrastructure2.NewToken()
+	jwt := utils.NewToken()
 	data, err := jwt.Validate(token)
 	if err != nil {
 		fmt.Println(err)

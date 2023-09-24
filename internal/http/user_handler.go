@@ -6,15 +6,15 @@ import (
 	"strconv"
 	"user-app/internal/application"
 	"user-app/internal/entity"
-	"user-app/internal/infrastructure"
+	"user-app/pkg/utils"
 )
 
 type UserHandler struct {
 	userApp   *application.UserApp
-	responder *infrastructure.Responder
+	responder *utils.Responder
 }
 
-func NewUserHandler(userApp *application.UserApp, responder *infrastructure.Responder) *UserHandler {
+func NewUserHandler(userApp *application.UserApp, responder *utils.Responder) *UserHandler {
 	return &UserHandler{
 		userApp:   userApp,
 		responder: responder,
@@ -28,6 +28,12 @@ func (handler *UserHandler) SaveUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, handler.responder.Fail("invalid json"))
 		return
 	}
+	bytePass, err := utils.Hash(user.Password)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(err))
+		return
+	}
+	user.Password = string(bytePass)
 	err, _ = handler.userApp.SaveUser(&user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(err))

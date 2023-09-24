@@ -8,8 +8,8 @@ import (
 	"user-app/internal/application"
 	http2 "user-app/internal/http"
 	middleware2 "user-app/internal/http/middleware"
-	"user-app/internal/infrastructure"
 	"user-app/internal/infrastructure/repository"
+	"user-app/pkg/utils"
 )
 
 func init() {
@@ -23,7 +23,7 @@ func main() {
 	defer repositories.Close()
 	repositories.Automigrate() //todo this is for dev environment
 	app := application.NewUserApp(repositories.User, repositories.Token)
-	responder := infrastructure.NewResponder()
+	responder := utils.NewResponder()
 	authMiddleware := middleware2.NewAuth(app, responder)
 	authHandlers := http2.NewLoginHandler(app, responder)
 	userHandlers := http2.NewUserHandler(app, responder)

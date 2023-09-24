@@ -25,7 +25,7 @@ func (repo *UserRepo) SaveUser(user *entity.User) (error, *entity.User) {
 
 func (repo *UserRepo) GetUser(id int, tokenLimit int) (error, *entity.User) {
 	var user entity.User
-	err := repo.db.Debug().Preload("AccessTokens", func(db *gorm.DB) *gorm.DB {
+	err := repo.db.Debug().Preload("Tokens", func(db *gorm.DB) *gorm.DB {
 		return db.Limit(tokenLimit)
 	}).Where("id = ?", id).Take(&user).Error
 	if err != nil {
