@@ -25,12 +25,10 @@ func (handler *UserHandler) SaveUser(ctx *gin.Context) {
 	var user entity.User
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(gin.H{
-			"invalid_json": "invalid json",
-		}))
+		ctx.JSON(http.StatusBadRequest, handler.responder.Fail("invalid json"))
 		return
 	}
-	_, err = handler.userApp.SaveUser(&user)
+	err, _ = handler.userApp.SaveUser(&user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(err))
 		return
@@ -45,18 +43,23 @@ func (handler *UserHandler) GetList(ctx *gin.Context) {
 		limit = 10
 	}
 	offset, _ := strconv.Atoi(ctx.Query("offset"))
-	cnt, _ := handler.userApp.GetUserCount()
-	if cnt == 0 {
-		ctx.JSON(http.StatusOK, handler.responder.SuccessList(0, limit, offset, gin.H{}))
-		return
-	}
-	var err error
-	users, err = handler.userApp.GetList(limit, offset)
+	err, cnt := handler.userApp.GetUserCount()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, handler.responder.SuccessList(cnt, limit, offset, users))
+
+	if *cnt == 0 {
+		ctx.JSON(http.StatusOK, handler.responder.SuccessList(0, limit, offset, gin.H{}))
+		return
+	}
+
+	err, users = handler.userApp.GetList(limit, offset)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, handler.responder.SuccessList(*cnt, limit, offset, users))
 }
 
 func (handler *UserHandler) GetUser(ctx *gin.Context) {
@@ -65,7 +68,7 @@ func (handler *UserHandler) GetUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-	user, err := handler.userApp.GetUser(userId, 1)
+	err, user := handler.userApp.GetUser(userId, 1)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return

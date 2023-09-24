@@ -34,7 +34,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail(validateUser))
 		return
 	}
-	dbUser, err := handler.userApp.GetUserByEmail(reqUser.Email)
+	err, dbUser := handler.userApp.GetUserByEmail(reqUser.Email)
 	if err != nil {
 		context.JSON(http.StatusNotFound, handler.responder.Fail("user not found"))
 		return
@@ -68,7 +68,7 @@ func (handler *LoginHandler) makeNewToken(context *gin.Context, dbUser *entity2.
 		UserId:             dbUser.ID,
 		UUID:               t.Data.TokenId,
 	}
-	_, err := handler.userApp.SaveToken(token)
+	err, _ := handler.userApp.SaveToken(token)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return nil, true

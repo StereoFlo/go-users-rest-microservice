@@ -13,19 +13,19 @@ func NewTokenRepo(db *gorm.DB) *AccessTokenRepo {
 	return &AccessTokenRepo{db}
 }
 
-func (repo AccessTokenRepo) SaveToken(token *entity.Token) (*entity.Token, error) {
+func (repo AccessTokenRepo) SaveToken(token *entity.Token) (error, *entity.Token) {
 	err := repo.db.Debug().Save(&token).Error
 	if err != nil {
-		return nil, err
+		return err, nil
 	}
-	return token, nil
+	return nil, token
 }
 
-func (repo AccessTokenRepo) GetTokenByUId(id string) (*entity.Token, error) {
+func (repo AccessTokenRepo) GetTokenByUId(id string) (error, *entity.Token) {
 	var token entity.Token
 	err := repo.db.Debug().Where("uuid = ?", id).Take(&token).Error
 	if err != nil {
-		return nil, err
+		return err, nil
 	}
-	return &token, nil
+	return nil, &token
 }

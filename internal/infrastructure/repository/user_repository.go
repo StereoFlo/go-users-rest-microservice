@@ -14,58 +14,64 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 	return &UserRepo{db}
 }
 
-func (repo *UserRepo) SaveUser(user *entity.User) (*entity.User, error) {
+func (repo *UserRepo) SaveUser(user *entity.User) (error, *entity.User) {
 	err := repo.db.Debug().Create(&user).Error
 	if err != nil {
-		return nil, err
+		return err, nil
 	}
-	return user, nil
+
+	return nil, user
 }
 
-func (repo *UserRepo) GetUser(id int, tokenLimit int) (*entity.User, error) {
+func (repo *UserRepo) GetUser(id int, tokenLimit int) (error, *entity.User) {
 	var user entity.User
 	err := repo.db.Debug().Preload("AccessTokens", func(db *gorm.DB) *gorm.DB {
 		return db.Limit(tokenLimit)
 	}).Where("id = ?", id).Take(&user).Error
 	if err != nil {
-		return nil, err
+		return err, nil
 	}
+
 	if gorm.IsRecordNotFoundError(err) {
-		return nil, errors.New("user not found")
+		return errors.New("user not found"), nil
 	}
-	return &user, nil
+
+	return nil, &user
 }
 
-func (repo *UserRepo) GetUserByEmail(email string) (*entity.User, error) {
+func (repo *UserRepo) GetUserByEmail(email string) (error, *entity.User) {
 	var user entity.User
 	err := repo.db.Debug().Where("email = ?", email).Take(&user).Error
 	if err != nil {
-		return nil, err
+		return err, nil
 	}
+
 	if gorm.IsRecordNotFoundError(err) {
-		return nil, errors.New("user not found")
+		return errors.New("user not found"), nil
 	}
-	return &user, nil
+
+	return nil, &user
 }
 
-func (repo *UserRepo) GetList(limit int, offset int) ([]entity.User, error) {
+func (repo *UserRepo) GetList(limit int, offset int) (error, []entity.User) {
 	var users []entity.User
 	err := repo.db.Debug().Offset(offset).Limit(limit).Find(&users).Error
 	if err != nil {
-		return nil, err
+		return err, nil
 	}
 	if gorm.IsRecordNotFoundError(err) {
-		return nil, errors.New("user not found")
+		return errors.New("user not found"), nil
 	}
-	return users, nil
+
+	return nil, users
 }
 
-func (repo *UserRepo) GetCount() (int, error) {
+func (repo *UserRepo) GetCount() (error, *int) {
 	var cnt int
 	err := repo.db.Table("users").Debug().Count(&cnt).Error
 	if err != nil {
-		return 0, err
+		return err, nil
 	}
 
-	return cnt, nil
+	return nil, &cnt
 }
