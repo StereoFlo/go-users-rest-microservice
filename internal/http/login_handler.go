@@ -7,7 +7,6 @@ import (
 	"time"
 	"user-app/internal/application"
 	entity2 "user-app/internal/entity"
-	infrastructure2 "user-app/internal/infrastructure"
 	"user-app/pkg/utils"
 )
 
@@ -30,7 +29,7 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
 		return
 	}
-	validateUser := infrastructure2.ValidateUser(reqUser, infrastructure2.Login)
+	validateUser := reqUser.ValidateUser(entity2.Login)
 	if len(validateUser) > 0 {
 		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail(validateUser))
 		return

@@ -1,7 +1,14 @@
 package entity
 
 import (
+	"fmt"
+	"github.com/badoux/checkmail"
+	"strings"
 	"time"
+)
+
+const (
+	Login = "login"
 )
 
 type User struct {
@@ -14,3 +21,23 @@ type User struct {
 }
 
 type Users []User
+
+func (u User) ValidateUser(action string) map[string]string {
+	var errorMessages = make(map[string]string)
+	switch strings.ToLower(action) {
+	case Login:
+		if u.Password == "" {
+			errorMessages["password_required"] = "password is required"
+		}
+		if u.Email == "" {
+			errorMessages["email_required"] = "email is required"
+		}
+		err := checkmail.ValidateFormat(u.Email)
+		if err != nil {
+			errorMessages["invalid_email"] = "please provide a valid email"
+		}
+	default:
+		errorMessages["password_required"] = fmt.Sprintf("unknown action %s", action)
+	}
+	return errorMessages
+}
