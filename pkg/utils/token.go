@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
-	"log"
-	"os"
 	"time"
 )
 
@@ -25,9 +23,7 @@ type Token struct {
 	publicKey  []byte
 }
 
-func NewToken() Token {
-	privateKey := getKeyData(os.Getenv("PRIVATE_KEY_FILE_PATH"))
-	publicKey := getKeyData(os.Getenv("PUBLIC_KEY_FILE_PATH"))
+func NewToken(privateKey []byte, publicKey []byte) Token {
 	return Token{
 		privateKey: privateKey,
 		publicKey:  publicKey,
@@ -82,12 +78,4 @@ func (t Token) parseToken(key *rsa.PublicKey) func(jwtToken *jwt.Token) (interfa
 
 		return key, nil
 	}
-}
-
-func getKeyData(path string) []byte {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return data
 }

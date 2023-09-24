@@ -13,12 +13,14 @@ import (
 type LoginHandler struct {
 	userApp   *application.UserApp
 	responder *utils.Responder
+	token     utils.Token
 }
 
-func NewLoginHandler(userApp *application.UserApp, responder *utils.Responder) *LoginHandler {
+func NewLoginHandler(userApp *application.UserApp, responder *utils.Responder, token utils.Token) *LoginHandler {
 	return &LoginHandler{
 		userApp:   userApp,
 		responder: responder,
+		token:     token,
 	}
 }
 
@@ -54,12 +56,11 @@ func (handler *LoginHandler) Login(context *gin.Context) {
 
 func (handler *LoginHandler) makeNewToken(context *gin.Context, dbUser *entity2.User) (*entity2.Token, bool) {
 	var token *entity2.Token
-	jwt := utils.NewToken()
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
-	accessToken := getToken(jwt, acExpire, dbUser)
-	refreshToken := getToken(jwt, rtExpire, dbUser)
-	t, _ := jwt.Validate(accessToken)
+	accessToken := getToken(handler.token, acExpire, dbUser)
+	refreshToken := getToken(handler.token, rtExpire, dbUser)
+	t, _ := handler.token.Validate(accessToken)
 	token = &entity2.Token{
 		AccessToken:        accessToken,
 		RefreshToken:       refreshToken,
