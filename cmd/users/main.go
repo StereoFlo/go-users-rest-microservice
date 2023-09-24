@@ -23,7 +23,7 @@ func main() {
 	defer repositories.Close()
 	repositories.Automigrate() //todo this is for dev environment
 	app := application.NewUserApp(repositories.User, repositories.Token)
-	token := utils.NewToken(utils.GetBytes(os.Getenv("PRIVATE_KEY_FILE_PATH")), utils.GetBytes(os.Getenv("PUBLIC_KEY_FILE_PATH")))
+	token := utils.NewToken(utils.GetFileBytes(os.Getenv("PRIVATE_KEY_FILE_PATH")), utils.GetFileBytes(os.Getenv("PUBLIC_KEY_FILE_PATH")))
 	responder := utils.NewResponder()
 	authMiddleware := middleware2.NewAuth(app, responder, token)
 	authHandlers := http2.NewLoginHandler(app, responder, token)
