@@ -2,15 +2,15 @@ package application
 
 import (
 	entity2 "user-app/internal/entity"
-	repository2 "user-app/internal/infrastructure/repository"
+	"user-app/internal/repository"
 )
 
 type UserApp struct {
-	userRepo        *repository2.UserRepo
-	accessTokenRepo *repository2.AccessTokenRepo
+	userRepo        *repository.UserRepo
+	accessTokenRepo *repository.AccessTokenRepo
 }
 
-func NewUserApp(userRepo *repository2.UserRepo, accessTokenRepo *repository2.AccessTokenRepo) *UserApp {
+func NewUserApp(userRepo *repository.UserRepo, accessTokenRepo *repository.AccessTokenRepo) *UserApp {
 	return &UserApp{userRepo: userRepo, accessTokenRepo: accessTokenRepo}
 }
 

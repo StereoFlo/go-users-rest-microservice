@@ -8,7 +8,7 @@ import (
 	"user-app/internal/application"
 	http2 "user-app/internal/http"
 	middleware2 "user-app/internal/http/middleware"
-	"user-app/internal/infrastructure/repository"
+	"user-app/internal/repository"
 	"user-app/pkg/utils"
 )
 
@@ -18,6 +18,9 @@ func init() {
 	}
 }
 
+// @title users api
+// @version 1.0
+// @BasePath /
 func main() {
 	repositories := getRepositories()
 	defer repositories.Close()
@@ -45,6 +48,12 @@ func main() {
 	log.Fatal(router.Run(":" + appPort))
 }
 
+// @Summary Login
+// @ID login
+// @Produce  json
+// @Param limit query int false "Максимальное количество пользователей"
+// @Success 200 {array} string
+// @Router /users [get]
 func authRoutes(router *gin.Engine, handler *http2.LoginHandler) {
 	auth := router.Group("/v1/auth")
 	auth.POST("/login", handler.Login)
