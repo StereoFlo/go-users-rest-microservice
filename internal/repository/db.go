@@ -2,8 +2,9 @@ package repository
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	entity2 "user-app/internal/entity"
 )
 
@@ -13,13 +14,14 @@ type Repositories struct {
 	db    *gorm.DB
 }
 
-func NewRepositories(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) (*Repositories, error) {
-	dBUrl := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
-	db, err := gorm.Open(Dbdriver, dBUrl)
+func NewRepositories(DbUser, DbPassword, DbPort, DbHost, DbName string) (*Repositories, error) {
+	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), //todo implement app_env
+	})
 	if err != nil {
 		return nil, err
 	}
-	db.LogMode(true)
 
 	return &Repositories{
 		User:  NewUserRepo(db),
@@ -28,10 +30,9 @@ func NewRepositories(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string
 	}, nil
 }
 
-func (repo *Repositories) Close() error {
-	return repo.db.Close()
-}
-
-func (repo *Repositories) Automigrate() error {
-	return repo.db.AutoMigrate(&entity2.User{}, &entity2.Token{}).Error
+func (repo *Repositories) Automigrate() {
+	err := repo.db.AutoMigrate(&entity2.User{}, &entity2.Token{})
+	if err != nil {
+		panic(err)
+	}
 }

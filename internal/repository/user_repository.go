@@ -2,7 +2,7 @@ package repository
 
 import (
 	"errors"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"user-app/internal/entity"
 )
 
@@ -32,7 +32,7 @@ func (repo *UserRepo) GetUser(id int, tokenLimit int) (error, *entity.User) {
 		return err, nil
 	}
 
-	if gorm.IsRecordNotFoundError(err) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.New("user not found"), nil
 	}
 
@@ -46,7 +46,7 @@ func (repo *UserRepo) GetUserByEmail(email string) (error, *entity.User) {
 		return err, nil
 	}
 
-	if gorm.IsRecordNotFoundError(err) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.New("user not found"), nil
 	}
 
@@ -59,15 +59,15 @@ func (repo *UserRepo) GetList(limit int, offset int) (error, []entity.User) {
 	if err != nil {
 		return err, nil
 	}
-	if gorm.IsRecordNotFoundError(err) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.New("user not found"), nil
 	}
 
 	return nil, users
 }
 
-func (repo *UserRepo) GetCount() (error, *int) {
-	var cnt int
+func (repo *UserRepo) GetCount() (error, *int64) {
+	var cnt int64
 	err := repo.db.Table("users").Debug().Count(&cnt).Error
 	if err != nil {
 		return err, nil

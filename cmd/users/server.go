@@ -20,7 +20,6 @@ func init() {
 
 func main() {
 	repositories := getRepositories()
-	defer repositories.Close()
 	repositories.Automigrate() //todo this is for dev environment
 	app := application.NewUserApp(repositories.User, repositories.Token)
 	token := utils.NewToken(utils.GetFileBytes(os.Getenv("PRIVATE_KEY_FILE_PATH")), utils.GetFileBytes(os.Getenv("PUBLIC_KEY_FILE_PATH")))
@@ -63,13 +62,12 @@ func userRoutes(router *gin.Engine, users *http2.UserHandler, middleware *middle
 }
 
 func getRepositories() *repository.Repositories {
-	dbDriver := os.Getenv("DB_DRIVER")
 	host := os.Getenv("DB_HOST")
 	password := os.Getenv("DB_PASSWORD")
 	user := os.Getenv("DB_USER")
 	dbname := os.Getenv("DB_NAME")
 	port := os.Getenv("DB_PORT")
-	repositories, err := repository.NewRepositories(dbDriver, user, password, port, host, dbname)
+	repositories, err := repository.NewRepositories(user, password, port, host, dbname)
 	if err != nil {
 		panic(err)
 	}

@@ -83,7 +83,10 @@ func (uh *UserHandler) GetList(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, uh.responder.SuccessList(*cnt, limit, offset, users))
+	var count int
+	count = int(*cnt)
+
+	ctx.JSON(http.StatusOK, uh.responder.SuccessList(count, limit, offset, users))
 }
 
 func (uh *UserHandler) GetUser(ctx *gin.Context) {

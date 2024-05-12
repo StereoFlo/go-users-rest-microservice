@@ -42,6 +42,6 @@ func (userApp *UserApp) GetList(limit int, offset int) (error, []entity2.User) {
 	return userApp.userRepo.GetList(limit, offset)
 }
 
-func (userApp *UserApp) GetUserCount() (error, *int) {
+func (userApp *UserApp) GetUserCount() (error, *int64) {
 	return userApp.userRepo.GetCount()
 }
