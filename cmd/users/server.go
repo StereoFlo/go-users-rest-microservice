@@ -18,9 +18,6 @@ func init() {
 	}
 }
 
-// @title users api
-// @version 1.0
-// @BasePath /
 func main() {
 	repositories := getRepositories()
 	defer repositories.Close()
@@ -38,22 +35,16 @@ func main() {
 	authRoutes(router, authHandlers)
 	userRoutes(router, userHandlers, authMiddleware)
 	appPort := os.Getenv("API_PORT")
-	router.NoRoute(func(c *gin.Context) {
-		c.JSON(404, responder.Fail("404 not found"))
-	})
 	if appPort == "" {
 		log.Fatal("API_PORT variable is not set in the .env file")
 	}
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(404, responder.Fail("404 not found"))
+	})
 
 	log.Fatal(router.Run(":" + appPort))
 }
 
-// @Summary Login
-// @ID login
-// @Produce  json
-// @Param limit query int false "Максимальное количество пользователей"
-// @Success 200 {array} string
-// @Router /users [get]
 func authRoutes(router *gin.Engine, handler *http2.LoginHandler) {
 	auth := router.Group("/v1/auth")
 	auth.POST("/login", handler.Login)
