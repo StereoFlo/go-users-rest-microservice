@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"time"
 	"user-app/internal/application"
@@ -27,6 +28,7 @@ func (handler *LoginHandler) Login(ctx *gin.Context) {
 	var reqUser *entity2.User
 	err := ctx.ShouldBindJSON(&reqUser)
 	if err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
 		return
 	}
@@ -37,17 +39,20 @@ func (handler *LoginHandler) Login(ctx *gin.Context) {
 	}
 	err, dbUser := handler.userApp.GetUserByEmail(reqUser.Email)
 	if err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusNotFound, handler.responder.Fail("user not found"))
 		return
 	}
 
 	err = utils.VerifyPassword(dbUser.Password, reqUser.Password)
 	if err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
 	}
 	token, err := handler.makeNewToken(dbUser)
 	if err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
@@ -59,24 +64,24 @@ func (handler *LoginHandler) makeNewToken(dbUser *entity2.User) (*entity2.Token,
 	var token *entity2.Token
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
-	accessToken, err := getToken(handler.token, acExpire, dbUser)
+	accessToken, err := handler.token.Get(acExpire, dbUser.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := getToken(handler.token, rtExpire, dbUser)
+	refreshToken, err := handler.token.Get(acExpire, dbUser.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := handler.token.Validate(*accessToken)
+	t, err := handler.token.Validate(accessToken)
 	if err != nil {
 		return nil, err
 	}
 
 	token = &entity2.Token{
-		AccessToken:        *accessToken,
-		RefreshToken:       *refreshToken,
+		AccessToken:        accessToken,
+		RefreshToken:       refreshToken,
 		AccessTokenExpire:  acExpire,
 		RefreshTokenExpire: rtExpire,
 		UserId:             dbUser.ID,
@@ -88,13 +93,4 @@ func (handler *LoginHandler) makeNewToken(dbUser *entity2.User) (*entity2.Token,
 	}
 
 	return token, nil
-}
-
-func getToken(jwt utils.Token, time time.Time, user *entity2.User) (*string, error) {
-	token, err := jwt.Get(time, user.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &token, nil
 }

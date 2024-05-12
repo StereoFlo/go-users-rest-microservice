@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strconv"
 	"user-app/internal/application"
@@ -44,40 +45,61 @@ func (handler *UserHandler) SaveUser(ctx *gin.Context) {
 
 func (handler *UserHandler) GetList(ctx *gin.Context) {
 	users := entity.Users{}
-	limit, _ := strconv.Atoi(ctx.Query("limit"))
+	limit, err := strconv.Atoi(ctx.Query("limit"))
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		return
+	}
+
 	if limit == 0 {
 		limit = 10
 	}
-	offset, _ := strconv.Atoi(ctx.Query("offset"))
+
+	offset, err := strconv.Atoi(ctx.Query("offset"))
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		return
+	}
+
 	err, cnt := handler.userApp.GetUserCount()
 	if err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
 
 	if *cnt == 0 {
+		log.Print(err)
 		ctx.JSON(http.StatusOK, handler.responder.SuccessList(0, limit, offset, gin.H{}))
 		return
 	}
 
 	err, users = handler.userApp.GetList(limit, offset)
 	if err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
+
 	ctx.JSON(http.StatusOK, handler.responder.SuccessList(*cnt, limit, offset, users))
 }
 
 func (handler *UserHandler) GetUser(ctx *gin.Context) {
 	userId, err := strconv.Atoi(ctx.Param("user_id"))
 	if err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
+
 	err, user := handler.userApp.GetUser(userId, 1)
 	if err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
+
 	ctx.JSON(http.StatusOK, handler.responder.Success(user))
 }
