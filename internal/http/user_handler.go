@@ -22,33 +22,33 @@ func NewUserHandler(userApp *application.UserApp, responder *utils.Responder) *U
 	}
 }
 
-func (handler *UserHandler) SaveUser(ctx *gin.Context) {
+func (uh *UserHandler) SaveUser(ctx *gin.Context) {
 	var user entity.User
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, handler.responder.Fail("invalid json"))
+		ctx.JSON(http.StatusBadRequest, uh.responder.Fail("invalid json"))
 		return
 	}
 	bytePass, err := utils.Hash(user.Password)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(err))
+		ctx.JSON(http.StatusBadRequest, uh.responder.Fail(err))
 		return
 	}
 	user.Password = string(bytePass)
-	err, _ = handler.userApp.SaveUser(&user)
+	err, _ = uh.userApp.SaveUser(&user)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, handler.responder.Fail(err))
+		ctx.JSON(http.StatusBadRequest, uh.responder.Fail(err))
 		return
 	}
-	ctx.JSON(http.StatusCreated, handler.responder.Success(user))
+	ctx.JSON(http.StatusCreated, uh.responder.Success(user))
 }
 
-func (handler *UserHandler) GetList(ctx *gin.Context) {
+func (uh *UserHandler) GetList(ctx *gin.Context) {
 	users := entity.Users{}
 	limit, err := strconv.Atoi(ctx.Query("limit"))
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		ctx.JSON(http.StatusInternalServerError, uh.responder.Fail(err))
 		return
 	}
 
@@ -59,34 +59,34 @@ func (handler *UserHandler) GetList(ctx *gin.Context) {
 	offset, err := strconv.Atoi(ctx.Query("offset"))
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		ctx.JSON(http.StatusInternalServerError, uh.responder.Fail(err))
 		return
 	}
 
-	err, cnt := handler.userApp.GetUserCount()
+	err, cnt := uh.userApp.GetUserCount()
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		ctx.JSON(http.StatusInternalServerError, uh.responder.Fail(err))
 		return
 	}
 
 	if *cnt == 0 {
 		log.Print(err)
-		ctx.JSON(http.StatusOK, handler.responder.SuccessList(0, limit, offset, gin.H{}))
+		ctx.JSON(http.StatusOK, uh.responder.SuccessList(0, limit, offset, gin.H{}))
 		return
 	}
 
-	err, users = handler.userApp.GetList(limit, offset)
+	err, users = uh.userApp.GetList(limit, offset)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		ctx.JSON(http.StatusInternalServerError, uh.responder.Fail(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, handler.responder.SuccessList(*cnt, limit, offset, users))
+	ctx.JSON(http.StatusOK, uh.responder.SuccessList(*cnt, limit, offset, users))
 }
 
-func (handler *UserHandler) GetUser(ctx *gin.Context) {
+func (uh *UserHandler) GetUser(ctx *gin.Context) {
 	userId, err := strconv.Atoi(ctx.Param("user_id"))
 	if err != nil {
 		log.Print(err)
@@ -94,12 +94,12 @@ func (handler *UserHandler) GetUser(ctx *gin.Context) {
 		return
 	}
 
-	err, user := handler.userApp.GetUser(userId, 1)
+	err, user := uh.userApp.GetUser(userId, 1)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		ctx.JSON(http.StatusInternalServerError, uh.responder.Fail(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, handler.responder.Success(user))
+	ctx.JSON(http.StatusOK, uh.responder.Success(user))
 }

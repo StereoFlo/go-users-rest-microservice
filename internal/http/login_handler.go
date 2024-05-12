@@ -24,57 +24,57 @@ func NewLoginHandler(userApp *application.UserApp, responder *utils.Responder, t
 	}
 }
 
-func (handler *LoginHandler) Login(ctx *gin.Context) {
+func (lh *LoginHandler) Login(ctx *gin.Context) {
 	var reqUser *entity2.User
 	err := ctx.ShouldBindJSON(&reqUser)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
+		ctx.JSON(http.StatusUnprocessableEntity, lh.responder.Fail("Invalid json provided"))
 		return
 	}
 	validateUser := reqUser.ValidateUser(entity2.Login)
 	if len(validateUser) > 0 {
-		ctx.JSON(http.StatusUnprocessableEntity, handler.responder.Fail(validateUser))
+		ctx.JSON(http.StatusUnprocessableEntity, lh.responder.Fail(validateUser))
 		return
 	}
-	err, dbUser := handler.userApp.GetUserByEmail(reqUser.Email)
+	err, dbUser := lh.userApp.GetUserByEmail(reqUser.Email)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusNotFound, handler.responder.Fail("user not found"))
+		ctx.JSON(http.StatusNotFound, lh.responder.Fail("user not found"))
 		return
 	}
 
 	err = utils.VerifyPassword(dbUser.Password, reqUser.Password)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
+		ctx.JSON(http.StatusNotFound, lh.responder.Fail("password is wrong"))
 		return
 	}
-	token, err := handler.makeNewToken(dbUser)
+	token, err := lh.makeNewToken(dbUser)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
+		ctx.JSON(http.StatusInternalServerError, lh.responder.Fail(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, handler.responder.Success(token))
+	ctx.JSON(http.StatusOK, lh.responder.Success(token))
 }
 
-func (handler *LoginHandler) makeNewToken(dbUser *entity2.User) (*entity2.Token, error) {
+func (lh *LoginHandler) makeNewToken(dbUser *entity2.User) (*entity2.Token, error) {
 	var token *entity2.Token
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
-	accessToken, err := handler.token.Get(acExpire, dbUser.ID)
+	accessToken, err := lh.token.Get(acExpire, dbUser.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := handler.token.Get(acExpire, dbUser.ID)
+	refreshToken, err := lh.token.Get(acExpire, dbUser.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := handler.token.Validate(accessToken)
+	t, err := lh.token.Validate(accessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (handler *LoginHandler) makeNewToken(dbUser *entity2.User) (*entity2.Token,
 		UserId:             dbUser.ID,
 		UUID:               t.Data.TokenId,
 	}
-	err, _ = handler.userApp.SaveToken(token)
+	err, _ = lh.userApp.SaveToken(token)
 	if err != nil {
 		return nil, err
 	}
