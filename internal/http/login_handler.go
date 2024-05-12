@@ -2,7 +2,6 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"time"
 	"user-app/internal/application"
@@ -24,63 +23,78 @@ func NewLoginHandler(userApp *application.UserApp, responder *utils.Responder, t
 	}
 }
 
-func (handler *LoginHandler) Login(context *gin.Context) {
+func (handler *LoginHandler) Login(ctx *gin.Context) {
 	var reqUser *entity2.User
-	err := context.ShouldBindJSON(&reqUser)
+	err := ctx.ShouldBindJSON(&reqUser)
 	if err != nil {
-		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
+		ctx.JSON(http.StatusUnprocessableEntity, handler.responder.Fail("Invalid json provided"))
 		return
 	}
 	validateUser := reqUser.ValidateUser(entity2.Login)
 	if len(validateUser) > 0 {
-		context.JSON(http.StatusUnprocessableEntity, handler.responder.Fail(validateUser))
+		ctx.JSON(http.StatusUnprocessableEntity, handler.responder.Fail(validateUser))
 		return
 	}
 	err, dbUser := handler.userApp.GetUserByEmail(reqUser.Email)
 	if err != nil {
-		context.JSON(http.StatusNotFound, handler.responder.Fail("user not found"))
+		ctx.JSON(http.StatusNotFound, handler.responder.Fail("user not found"))
 		return
 	}
 
 	err = utils.VerifyPassword(dbUser.Password, reqUser.Password)
 	if err != nil {
-		context.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
+		ctx.JSON(http.StatusNotFound, handler.responder.Fail("password is wrong"))
 		return
 	}
-	token, done := handler.makeNewToken(context, dbUser)
-	if done {
+	token, err := handler.makeNewToken(dbUser)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
 		return
 	}
-	context.JSON(http.StatusOK, handler.responder.Success(token))
+
+	ctx.JSON(http.StatusOK, handler.responder.Success(token))
 }
 
-func (handler *LoginHandler) makeNewToken(context *gin.Context, dbUser *entity2.User) (*entity2.Token, bool) {
+func (handler *LoginHandler) makeNewToken(dbUser *entity2.User) (*entity2.Token, error) {
 	var token *entity2.Token
 	acExpire := time.Now().Add(10 * time.Hour)
 	rtExpire := time.Now().Add(20 * time.Hour)
-	accessToken := getToken(handler.token, acExpire, dbUser)
-	refreshToken := getToken(handler.token, rtExpire, dbUser)
-	t, _ := handler.token.Validate(accessToken)
+	accessToken, err := getToken(handler.token, acExpire, dbUser)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := getToken(handler.token, rtExpire, dbUser)
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := handler.token.Validate(*accessToken)
+	if err != nil {
+		return nil, err
+	}
+
 	token = &entity2.Token{
-		AccessToken:        accessToken,
-		RefreshToken:       refreshToken,
+		AccessToken:        *accessToken,
+		RefreshToken:       *refreshToken,
 		AccessTokenExpire:  acExpire,
 		RefreshTokenExpire: rtExpire,
 		UserId:             dbUser.ID,
 		UUID:               t.Data.TokenId,
 	}
-	err, _ := handler.userApp.SaveToken(token)
+	err, _ = handler.userApp.SaveToken(token)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, handler.responder.Fail(err))
-		return nil, true
+		return nil, err
 	}
-	return token, false
+
+	return token, nil
 }
 
-func getToken(jwt utils.Token, time time.Time, user *entity2.User) string {
-	accessToken, err := jwt.Get(time, user.ID)
+func getToken(jwt utils.Token, time time.Time, user *entity2.User) (*string, error) {
+	token, err := jwt.Get(time, user.ID)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
-	return accessToken
+
+	return &token, nil
 }
