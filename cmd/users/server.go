@@ -38,6 +38,11 @@ func main() {
 	if appPort == "" {
 		log.Fatal("API_PORT variable is not set in the .env file")
 	}
+
+	if os.Getenv("APP_ENV") == "prod" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(404, responder.Fail("404 not found"))
 	})
