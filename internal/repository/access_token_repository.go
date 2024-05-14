@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"gorm.io/gorm"
 	"user-app/internal/entity"
 )
@@ -13,8 +14,8 @@ func NewTokenRepo(db *gorm.DB) *AccessTokenRepo {
 	return &AccessTokenRepo{db}
 }
 
-func (repo AccessTokenRepo) SaveToken(token *entity.Token) (error, *entity.Token) {
-	err := repo.db.Debug().Save(&token).Error
+func (repo AccessTokenRepo) SaveToken(ctx context.Context, token *entity.Token) (error, *entity.Token) {
+	err := repo.db.Debug().WithContext(ctx).Save(&token).Error
 	if err != nil {
 		return err, nil
 	}

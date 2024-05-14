@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"gorm.io/gorm"
 	"user-app/internal/entity"
@@ -14,8 +15,8 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 	return &UserRepo{db}
 }
 
-func (repo *UserRepo) SaveUser(user *entity.User) (error, *entity.User) {
-	err := repo.db.Debug().Create(&user).Error
+func (repo *UserRepo) SaveUser(ctx context.Context, user *entity.User) (error, *entity.User) {
+	err := repo.db.Debug().WithContext(ctx).Create(&user).Error
 	if err != nil {
 		return err, nil
 	}
@@ -23,9 +24,9 @@ func (repo *UserRepo) SaveUser(user *entity.User) (error, *entity.User) {
 	return nil, user
 }
 
-func (repo *UserRepo) GetUser(id int, tokenLimit int) (error, *entity.User) {
+func (repo *UserRepo) GetUser(ctx context.Context, id int, tokenLimit int) (error, *entity.User) {
 	var user entity.User
-	err := repo.db.Debug().Preload("Tokens", func(db *gorm.DB) *gorm.DB {
+	err := repo.db.Debug().WithContext(ctx).Preload("Tokens", func(db *gorm.DB) *gorm.DB {
 		return db.Limit(tokenLimit)
 	}).Where("id = ?", id).Take(&user).Error
 	if err != nil {
@@ -39,9 +40,9 @@ func (repo *UserRepo) GetUser(id int, tokenLimit int) (error, *entity.User) {
 	return nil, &user
 }
 
-func (repo *UserRepo) GetUserByEmail(email string) (error, *entity.User) {
+func (repo *UserRepo) GetUserByEmail(ctx context.Context, email string) (error, *entity.User) {
 	var user entity.User
-	err := repo.db.Debug().Where("email = ?", email).Take(&user).Error
+	err := repo.db.Debug().WithContext(ctx).Where("email = ?", email).Take(&user).Error
 	if err != nil {
 		return err, nil
 	}
@@ -53,9 +54,9 @@ func (repo *UserRepo) GetUserByEmail(email string) (error, *entity.User) {
 	return nil, &user
 }
 
-func (repo *UserRepo) GetList(limit int, offset int) (error, []entity.User) {
+func (repo *UserRepo) GetList(ctx context.Context, limit int, offset int) (error, []entity.User) {
 	var users []entity.User
-	err := repo.db.Debug().Offset(offset).Limit(limit).Find(&users).Error
+	err := repo.db.WithContext(ctx).Debug().Offset(offset).Limit(limit).Find(&users).Error
 	if err != nil {
 		return err, nil
 	}
@@ -66,9 +67,9 @@ func (repo *UserRepo) GetList(limit int, offset int) (error, []entity.User) {
 	return nil, users
 }
 
-func (repo *UserRepo) GetCount() (error, *int64) {
+func (repo *UserRepo) GetCount(cxt context.Context) (error, *int64) {
 	var cnt int64
-	err := repo.db.Table("users").Debug().Count(&cnt).Error
+	err := repo.db.WithContext(cxt).Table("users").Debug().Count(&cnt).Error
 	if err != nil {
 		return err, nil
 	}
