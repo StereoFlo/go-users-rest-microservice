@@ -35,7 +35,7 @@ func (uh *UserHandler) SaveUser(ctx *gin.Context) {
 		return
 	}
 	user.Password = string(bytePass)
-	err, _ = uh.userApp.SaveUser(ctx, &user)
+	_, err = uh.userApp.SaveUser(ctx, &user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, uh.responder.Fail(err))
 		return
@@ -76,7 +76,7 @@ func (uh *UserHandler) GetList(ctx *gin.Context) {
 		return
 	}
 
-	err, users = uh.userApp.GetList(ctx, limit, offset)
+	users, err = uh.userApp.GetList(ctx, limit, offset)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, uh.responder.Fail(err))
@@ -97,7 +97,7 @@ func (uh *UserHandler) GetUser(ctx *gin.Context) {
 		return
 	}
 
-	err, user := uh.userApp.GetUser(ctx, userId, 1)
+	user, err := uh.userApp.GetUser(ctx, userId, 1)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, uh.responder.Fail(err))

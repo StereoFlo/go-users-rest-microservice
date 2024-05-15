@@ -15,56 +15,56 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 	return &UserRepo{db}
 }
 
-func (repo *UserRepo) SaveUser(ctx context.Context, user *entity.User) (error, *entity.User) {
+func (repo *UserRepo) SaveUser(ctx context.Context, user *entity.User) (*entity.User, error) {
 	err := repo.db.Debug().WithContext(ctx).Create(&user).Error
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
-	return nil, user
+	return user, nil
 }
 
-func (repo *UserRepo) GetUser(ctx context.Context, id int, tokenLimit int) (error, *entity.User) {
+func (repo *UserRepo) GetUser(ctx context.Context, id int, tokenLimit int) (*entity.User, error) {
 	var user entity.User
 	err := repo.db.Debug().WithContext(ctx).Preload("Tokens", func(db *gorm.DB) *gorm.DB {
 		return db.Limit(tokenLimit)
 	}).Where("id = ?", id).Take(&user).Error
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("user not found"), nil
+		return nil, errors.New("user not found")
 	}
 
-	return nil, &user
+	return &user, nil
 }
 
-func (repo *UserRepo) GetUserByEmail(ctx context.Context, email string) (error, *entity.User) {
+func (repo *UserRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
 	err := repo.db.Debug().WithContext(ctx).Where("email = ?", email).Take(&user).Error
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("user not found"), nil
+		return nil, errors.New("user not found")
 	}
 
-	return nil, &user
+	return &user, nil
 }
 
-func (repo *UserRepo) GetList(ctx context.Context, limit int, offset int) (error, []entity.User) {
+func (repo *UserRepo) GetList(ctx context.Context, limit int, offset int) ([]entity.User, error) {
 	var users []entity.User
 	err := repo.db.WithContext(ctx).Debug().Offset(offset).Limit(limit).Find(&users).Error
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("user not found"), nil
+		return nil, errors.New("user not found")
 	}
 
-	return nil, users
+	return users, nil
 }
 
 func (repo *UserRepo) GetCount(cxt context.Context) (error, *int64) {

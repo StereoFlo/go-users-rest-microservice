@@ -32,7 +32,7 @@ func (userApp *Auth) Auth(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	err, dbToken := userApp.userApp.GetTokenByUId(data.Data.TokenId)
+	dbToken, err := userApp.userApp.GetTokenByUId(data.Data.TokenId)
 	if err != nil {
 		c.JSON(401, userApp.responder.Fail("Token was not found"))
 		c.Abort()

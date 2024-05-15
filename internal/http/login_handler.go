@@ -38,7 +38,7 @@ func (lh *LoginHandler) Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnprocessableEntity, lh.responder.Fail(validateUser))
 		return
 	}
-	err, dbUser := lh.userApp.GetUserByEmail(ctx, reqUser.Email)
+	dbUser, err := lh.userApp.GetUserByEmail(ctx, reqUser.Email)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusNotFound, lh.responder.Fail("user not found"))
@@ -88,7 +88,7 @@ func (lh *LoginHandler) makeNewToken(ctx context.Context, dbUser *entity2.User) 
 		UserId:             dbUser.ID,
 		UUID:               t.Data.TokenId,
 	}
-	err, _ = lh.userApp.SaveToken(ctx, token)
+	_, err = lh.userApp.SaveToken(ctx, token)
 	if err != nil {
 		return nil, err
 	}
